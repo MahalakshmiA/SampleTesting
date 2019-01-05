@@ -25,10 +25,10 @@ public class MyDeserializer implements JsonDeserializer<OutputObj> {
         JsonObject object = json.getAsJsonObject().getAsJsonObject(timezoneList_key);
         Map<String, Timezone> retMap = new Gson().fromJson(object, new TypeToken<HashMap<String, Timezone>>() {}.getType());
 
-      //  if(){
-      //  List<Timezone> list = new ArrayList<Timezone>(retMap.values());
+    
+        List<Timezone> list = new ArrayList<Timezone>(retMap.values());
         obj.timezoneList = retMap;
-      //  }
+      
         
         object = json.getAsJsonObject().getAsJsonObject("Meta Data");
         Metadata metadata =  new Gson().fromJson(object, new TypeToken<Metadata>() {}.getType());
