@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -83,7 +84,8 @@ public class Client2 {
 			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
 			URL url = new URL(
-					"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=5min&apikey=J27JKP9HNK701478");
+					"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=J27JKP9HNK701478");
+		//"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=5min&apikey=J27JKP9HNK701478");
 			/*
 			 * URL url = new URL(
 			 * "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=1min&apikey=J27JKP9HNK701478"
@@ -128,23 +130,209 @@ public class Client2 {
 
 			// Copy all data from hashMap into TreeMap
 			sortedtimezoneList.putAll(obj.getTimezoneList());
-
-			int minutesToAdd = 25;
-			TreeMap<String, Details> consolidatedHighLowList = getConsolidatedHighLowList(
-					sortedtimezoneList, minutesToAdd);
-
-			System.out.println("Final Consolidated Size"
-					+ consolidatedHighLowList.size());
-
-			for (Entry<String, Details> entry : consolidatedHighLowList
+			
+			
+			//Sort the objects 
+			TreeMap<String, Details> levelList = new TreeMap<String, Details>();
+			
+			for (Entry<String, Timezone> entry : sortedtimezoneList
 					.entrySet()) {
-				System.out.println("Start date " + entry.getKey() + ", High = "
-						+ entry.getValue().getHigh() + "," + "Low = "
-						+ entry.getValue().getLow() + ", Open = "
-						+ entry.getValue().getOpen() + "," + ", Close = "
-						+ entry.getValue().getClose() + "," + ", end Date = "
-						+ entry.getValue().getEndDate());
+				
+				Details details = new Details();
+				
+				double close = Double.parseDouble(entry.getValue().getClose());
+				double open = Double.parseDouble(entry.getValue().getOpen());
+				double high = Double.parseDouble(entry.getValue().getHigh());
+				double low  = Double.parseDouble(entry.getValue().getLow());
+				
+						details.setOpen(String.valueOf(open));
+				details.setClose(String.valueOf(close));
+				details.setHigh(String.valueOf(high));
+				details.setLow(String.valueOf(low));
+				
+				
+				
+				if(close > open){
+					details.setCandleColour("Green");
+				}else{
+					details.setCandleColour("Red");
+				}
+				
+				
+				double candleHeight = Math.abs(high - low);
+				double candleBody = Math.abs(close - open);
+				
+				details.setCandleHeight(candleHeight);
+				
+				details.setCandleBody(candleBody);
+				
+				if(candleHeight/candleBody > 2){
+					details.setCandleType("Excited");
+				}else{
+					details.setCandleType("Boring");
+				}
+				
+				
+				
+				
+				
+				// Copy all data from hashMap into TreeMap
+				levelList.put(entry.getKey(), details);
+				
+			
 			}
+			 boolean isfirst = true;
+			 boolean isSecond = true;
+			 TreeMap<String, Details> MarkablelevelList = new TreeMap<String, Details>();
+			List<String> keyList = new ArrayList<String>(levelList.keySet());
+			for(int i = 0; i < keyList.size(); i++) {
+			    String currentkey = keyList.get(i);
+			    Details currentDetails = levelList.get(currentkey);
+			    
+		    	if(isfirst){
+		    		
+		    		isfirst = false;
+		    	}else if(isSecond){
+		    	
+		    		isSecond = false;
+		    		}
+		    	else{
+		    		String previousKey = keyList.get(i-1);
+		    		String nextKey = keyList.get(i+1);
+		    		
+		    		 Details previousDetails = levelList.get(previousKey);
+		    		
+		    		 Details nextDetails = levelList.get(nextKey);
+		    		 
+		    		 if(previousDetails.getCandleType().equalsIgnoreCase("Excited") && nextDetails.getCandleType().equalsIgnoreCase("Excited")
+		    				 && currentDetails.getCandleType().equalsIgnoreCase("Boring")){
+		    			 currentDetails.setMarkableLevel(true);
+		    			 String previousColour = previousDetails.getCandleColour();
+		    			 String nextColour = nextDetails.getCandleColour();
+		    			 if(previousColour.equalsIgnoreCase("Red") && nextColour.equalsIgnoreCase("Red")){
+		    				 currentDetails.setLevelType("DBD");
+		    			 }else if(previousColour.equalsIgnoreCase("Green") && nextColour.equalsIgnoreCase("Green")){
+		    				 currentDetails.setLevelType("RBR");
+		    			 }else if(previousColour.equalsIgnoreCase("Red") && nextColour.equalsIgnoreCase("Green")){
+		    				 currentDetails.setLevelType("DBR");
+		    			 }else if(previousColour.equalsIgnoreCase("Green") && nextColour.equalsIgnoreCase("Red")){
+		    				 currentDetails.setLevelType("RBD");
+		    			 }else{
+		    				 currentDetails.setLevelType("YTD");
+		    			 }
+		    			 
+		    			 i++; 
+		    			 isfirst = true;
+		    			 isSecond = true;
+		    		 }
+		    		 
+		    	}
+		    	MarkablelevelList.put(currentkey, currentDetails);
+		    	
+		    }
+			
+			for (Entry<String, Details> entry : MarkablelevelList.entrySet()) {
+				System.out.println("Start date "
+						+ entry.getKey()
+						+ ", High = "
+						+ entry.getValue().getHigh()
+						+ ","
+						+ "Low = "
+						+ entry.getValue().getLow()
+						+ ", Open = "
+						+ entry.getValue().getOpen()
+						+ ","
+						+ ", Close = "
+						+ entry.getValue().getClose()
+						+ ","
+						+ ", Candle Color = "
+						+ entry.getValue().getCandleColour()
+						+ ", Candle type = "
+						+ entry.getValue().getCandleType()
+						+ ", Candle Height = "
+						+ entry.getValue().getCandleHeight()
+						+ ", Candle Body = "
+						+ entry.getValue().getCandleBody()
+						+ ", Candle Markable List = "
+						+ entry.getValue().isMarkableLevel()
+						+ ", Candle Level Type = "
+						+ entry.getValue().getLevelType()
+						+ ", facotr"
+						+ ", facotr"
+						+ (entry.getValue().getCandleHeight() / entry
+								.getValue().getCandleBody()));
+			}
+			
+			System.out.println("Final Consolidated List--> Starts");
+			for (Entry<String, Details> entry : MarkablelevelList.entrySet()) {
+				
+				if(entry.getValue().isMarkableLevel()){
+				System.out.println("Start date "
+						+ entry.getKey()
+						+ ", High = "
+						+ entry.getValue().getHigh()
+						+ ","
+						+ "Low = "
+						+ entry.getValue().getLow()
+						+ ", Open = "
+						+ entry.getValue().getOpen()
+						+ ","
+						+ ", Close = "
+						+ entry.getValue().getClose()
+						+ ","
+						+ ", Candle Color = "
+						+ entry.getValue().getCandleColour()
+						+ ", Candle type = "
+						+ entry.getValue().getCandleType()
+						+ ", Candle Height = "
+						+ entry.getValue().getCandleHeight()
+						+ ", Candle Body = "
+						+ entry.getValue().getCandleBody()
+						+ ", Candle Markable List = "
+						+ entry.getValue().isMarkableLevel()
+						+ ", Candle Level Type = "
+						+ entry.getValue().getLevelType()
+						+ ", facotr"
+						+ ", facotr"
+						+ (entry.getValue().getCandleHeight() / entry
+								.getValue().getCandleBody()));
+				}
+			}
+			
+			System.out.println("Final Consolidated List--> Ends");
+			for (Entry<String, Details> entry : levelList.entrySet()) {
+				System.out.println("Start date "
+						+ entry.getKey()
+						+ ", High = "
+						+ entry.getValue().getHigh()
+						+ ","
+						+ "Low = "
+						+ entry.getValue().getLow()
+						+ ", Open = "
+						+ entry.getValue().getOpen()
+						+ ","
+						+ ", Close = "
+						+ entry.getValue().getClose()
+						+ ","
+						+ ", Candle Color = "
+						+ entry.getValue().getCandleColour()
+						+ ", Candle type = "
+						+ entry.getValue().getCandleType()
+						+ ", Candle Height = "
+						+ entry.getValue().getCandleHeight()
+						+ ", Candle Body = "
+						+ entry.getValue().getCandleBody()
+						+ ", facotr"
+						+ (entry.getValue().getCandleHeight() / entry
+								.getValue().getCandleBody()));
+			}
+
+		
+			
+			
+			
+
+		//	addMinutes(sortedtimezoneList);
 
 			/*
 			 * String baseURL = "http://finance.yahoo.com/d/quotes.csv?s=";
@@ -167,6 +355,30 @@ public class Client2 {
 
 			e.printStackTrace();
 
+		}
+	}
+
+	/**
+	 * @param sortedtimezoneList
+	 * @throws ParseException
+	 */
+	private static void addMinutes(TreeMap<String, Timezone> sortedtimezoneList)
+			throws ParseException {
+		int minutesToAdd = 25;
+		TreeMap<String, Details> consolidatedHighLowList = getConsolidatedHighLowList(
+				sortedtimezoneList, minutesToAdd);
+
+		System.out.println("Final Consolidated Size"
+				+ consolidatedHighLowList.size());
+
+		for (Entry<String, Details> entry : consolidatedHighLowList
+				.entrySet()) {
+			System.out.println("Start date " + entry.getKey() + ", High = "
+					+ entry.getValue().getHigh() + "," + "Low = "
+					+ entry.getValue().getLow() + ", Open = "
+					+ entry.getValue().getOpen() + "," + ", Close = "
+					+ entry.getValue().getClose() + "," + ", end Date = "
+					+ entry.getValue().getEndDate());
 		}
 	}
 

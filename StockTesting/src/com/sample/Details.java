@@ -102,5 +102,90 @@ public class Details {
 		this.endDate = endDate;
 	}
 	public String endDate;
+	
+	public String candleColour;
+	
+	/**
+	 * @return the candleColour
+	 */
+	public String getCandleColour() {
+		return candleColour;
+	}
+	/**
+	 * @param candleColour the candleColour to set
+	 */
+	public void setCandleColour(String candleColour) {
+		this.candleColour = candleColour;
+	}
+	/**
+	 * @return the candleType
+	 */
+	public String getCandleType() {
+		return candleType;
+	}
+	/**
+	 * @param candleType the candleType to set
+	 */
+	public void setCandleType(String candleType) {
+		this.candleType = candleType;
+	}
+	/**
+	 * @return the candleHeight
+	 */
+	public double getCandleHeight() {
+		return candleHeight;
+	}
+	/**
+	 * @param candleHeight the candleHeight to set
+	 */
+	public void setCandleHeight(double candleHeight) {
+		this.candleHeight = candleHeight;
+	}
+	/**
+	 * @return the candleBody
+	 */
+	public double getCandleBody() {
+		return candleBody;
+	}
+	/**
+	 * @param candleBody the candleBody to set
+	 */
+	public void setCandleBody(double candleBody) {
+		this.candleBody = candleBody;
+	}
+	public String candleType;
+	
+	public double candleHeight;
+	
+	public double candleBody;
+	
+	/**
+	 * @return the markableLevel
+	 */
+	public boolean isMarkableLevel() {
+		return markableLevel;
+	}
+	/**
+	 * @param markableLevel the markableLevel to set
+	 */
+	public void setMarkableLevel(boolean markableLevel) {
+		this.markableLevel = markableLevel;
+	}
+	public boolean markableLevel;
+	
+	public String levelType;
+
+	/**
+	 * @return the levelType
+	 */
+	public String getLevelType() {
+		return levelType;
+	}
+	/**
+	 * @param levelType the levelType to set
+	 */
+	public void setLevelType(String levelType) {
+		this.levelType = levelType;
+	}
 
 }

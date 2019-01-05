@@ -15,7 +15,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 public class MyDeserializer implements JsonDeserializer<OutputObj> {
-    private final String timezoneList_key = "Time Series (5min)";
+    private final String timezoneList_key = "Time Series (Daily)";
+    		//"Time Series (5min)";
 
     @Override
     public OutputObj deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
