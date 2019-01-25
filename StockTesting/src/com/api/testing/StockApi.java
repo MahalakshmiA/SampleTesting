@@ -103,8 +103,8 @@ public class StockApi {
 		System.out.println(timeFrame + " Support Resistance levels \n");
 		Map map1 = (Map) map.get(timeSeriesKey);
 		String strDate = "";
-		String startDate = "2018-12-18";
-		int noOfdays = 100;
+		String startDate = "2019-01-25";
+		int noOfdays = 200;
 		int i = 0;
 		Double supportHigh = 0.0;
 		Double supportLow = 0.0;
@@ -125,6 +125,7 @@ public class StockApi {
 		boolean isResistAvailble = false;
 		boolean supportGap;
 		boolean resistGap;
+		boolean testModule = false;
 		while(i!=noOfdays){
 			supportGap = false;
 			resistGap = false;
@@ -172,7 +173,15 @@ public class StockApi {
 //					System.out.println("Supp Gap "+  strDate+" Close "+ candleClose +" lastHigh "+ lastCandleHigh + " lastLow "+ lastCandlelow);
 				}				
 			}
-				
+			/*testModule = true;
+			if(testModule) {
+				lastCandleHigh = candleHigh;
+				lastCandlelow = candlelow;
+				lastCandle =  currCandle;
+				i++;
+				continue;				
+			}*/
+			
 			markSupportResistance(currCandle,timeFrame,supportGap,resistGap);
 			//TODO Identify level type based on Legout,basing and leg in
 			// Consider leg-out and leg-in candles to set level low high based on level type 
@@ -189,6 +198,10 @@ public class StockApi {
 				}				
 				if(supportLow == 0.0 ||  candlelow < supportLow)
 				supportLow = candlelow;
+				
+				//If previous candle is legout candle , Use leg-out candle extreme as level extreme for RBR, DBR, RBD & DBD
+				if(supportLow == 0.0 || ( lastCandlelow < supportLow))
+					supportLow = lastCandlelow;	
 					
 //				System.out.println(" Support "+  strDate+" CandleType "+ currCandle);	
 			}else if(!markLevel && resistLevel){//Only Candles inside Resistance , only boring candle
@@ -203,6 +216,10 @@ public class StockApi {
 				}
 				if(candleHigh > resistHigh)
 					resistHigh = candleHigh;
+				
+				//If previous candle is legout candle,Use leg-out candle extreme as level extreme for RBR, DBR, RBD & DBD
+				if(lastCandleHigh > resistHigh)
+					resistHigh = lastCandleHigh;
 					
 //				System.out.println(" Resistance "+  strDate+" CandleType "+ currCandle);					
 			}else{//Candle is LG or LR or SL outside levels
@@ -220,12 +237,8 @@ public class StockApi {
 						if(lastCandleHigh > allTimeHigh){
 							//TODO avoid first candle if LR
 							allTimeHigh = lastCandleHigh;					
-						}
-						//Use leg-out candle extreme as level extreme for RBR, DBR, RBD & DBD
-						if(candleHigh > resistHigh)
-							resistHigh = candleHigh;
-						if(supportLow == 0.0 || ( candlelow < supportLow))
-							supportLow = candlelow;	
+						}						
+						
 						
 					}else {
 						if(allTimeLow == 0.0 || candlelow < allTimeLow){
@@ -249,9 +262,9 @@ public class StockApi {
 						
 					
 					}else{//Use leg-in candle extreme as level extreme for RBD & DBR
-						if(candleHigh > resistHigh && currCandle == "LG")
+						if(resistLevel && candleHigh > resistHigh && currCandle == "LG")
 							resistHigh = candleHigh;
-						if(supportLow == 0.0 || ( candlelow < supportLow && currCandle == "LR" ))
+						if(supportLevel && (supportLow == 0.0 || (candlelow < supportLow && currCandle == "LR" )))
 							supportLow = candlelow;					
 					}
 				
@@ -270,7 +283,7 @@ public class StockApi {
 						isSuppAvailble = true;
 					}					
 				}else if (resistLevel) {
-					System.out.println("Resist "+  strDate+" CandleType "+ currCandle +" resHigh " + resistHigh+" resLow " + resistLow +" High " + allTimeHigh);
+//					System.out.println("Resist "+  strDate+" CandleType "+ currCandle +" resHigh " + resistHigh+" resLow " + resistLow +" High " + allTimeHigh);
 					if(resistHigh != 0.0 && resistLow != 0.0 && resistLow > allTimeHigh && !isResistAvailble){
 						System.out.println(" Resistance level "+strDate + " from  "+  resistLow+ " to "+ resistHigh);
 						isResistAvailble = true;						
@@ -282,16 +295,16 @@ public class StockApi {
 				if(isSuppAvailble && isResistAvailble)
 					break;
 				
-				if(supportLow < allTimeLow )
+				if(supportLow != 0.0 && supportLow < allTimeLow )
 					allTimeLow = supportLow;
 				if(resistHigh > allTimeHigh )
-					allTimeHigh = resistHigh;			
-				
+					allTimeHigh = resistHigh;					
 				
 				supportHigh = 0.0;
-				supportLow = 0.0;	
+				supportLow = 0.0;
 				resistHigh = 0.0;
-				resistLow = 0.0;
+				resistLow = 0.0;					
+				
 				//TODO check whether leg out candle low/high is considered for level
 			/*	if(candleHigh > allTimeHigh && currCandle != "LR")//set leg-out candle high as all time high
 					allTimeHigh = candleHigh;
@@ -304,7 +317,8 @@ public class StockApi {
 					allTimeLow = candlelow;	
 				
 			}			
-		}	
+		}
+		
 		lastCandleHigh = candleHigh;
 		lastCandlelow = candlelow;
 		lastCandle =  currCandle;
@@ -382,10 +396,16 @@ public class StockApi {
 			noOfLR = noOfLR+countLR;*/	
 		boolean legInCandle = false;	
 		isLegOutCandle = false;
-		if (supportGap || resistGap){			
+		if (supportGap || resistGap){
+			isLegOutCandle = true;
 			if(supportLevel || resistLevel){	
 				legInCandle = true;				
 			}	
+			if(supportGap)
+				noOfLG = noOfLG+2;
+			if(resistGap)
+				noOfLR = noOfLR+2;
+				
 		}
 		
 		if ("LG".equalsIgnoreCase(currCandle)){
@@ -450,9 +470,20 @@ public class StockApi {
 //		if((supportGap || resistGap) && legInCandle){
 		if(legInCandle){
 			markLevel = true;
-			noOfLG = 0;
-			noOfLR = 0;
-			noOfSL = 0;
+			if ("LG".equalsIgnoreCase(currCandle)){
+				noOfLG = 1;				
+			}else if ("LR".equalsIgnoreCase(currCandle)){
+				noOfLR = 1;				
+			}else if ("SL".equalsIgnoreCase(currCandle)) {
+				noOfSL = 1;				
+			}
+			
+			if(supportGap)
+				noOfLG = 2;
+			if(resistGap)
+				noOfLR = 2;			
+			
+			//TODO add candle count for gap
 			/*supportLevel = false;
 			resistLevel = false;	*/		
 			//TODO set mark level to true only for leg-in candle, currently setting for both leg-in and leg-out candle(Only for Gaps)
