@@ -144,7 +144,7 @@ public class Client2 {
 			TreeMap<String, Details> levelList = new TreeMap<String, Details>();
 			TreeMap<String, Details> IstlevelList = new TreeMap<String, Details>();
 			
-			int noOfDaysToBeCalc = 2;
+			int noOfDaysToBeCalc = 0;
 			
 			String ToDate = "2019-05-31";
 			String fromDate = getEndDate(ToDate, -noOfDaysToBeCalc);
@@ -206,14 +206,13 @@ public class Client2 {
 				boolean nseStock = true;
 				if(nseStock){
 					String istTime = getIstTime(entry.getKey());
-					System.out.println(istTime);
+					System.out.println("istTime->"+istTime);
 					
 					
 					
 					
 					
-					if (((getDate(istTime).after((getDate(fromDateWithMins))) || getDate(
-							istTime).equals((getDate(fromDateWithMins)))) && (getDate(istTime)
+					if (((getDate(istTime).after((getDate(fromDateWithMins)))) && (getDate(istTime)
 							.before(getDate(endDateWithMins))))) {
 						IstlevelList.put(istTime, details);
 					}
@@ -741,7 +740,7 @@ public class Client2 {
 	        calendar.add(Calendar.HOUR, 9);
 	 
 	        // Add 30 minutes to the calendar time
-	        calendar.add(Calendar.MINUTE, 15);
+	        calendar.add(Calendar.MINUTE, 10);
 	 
 	        // Add 300 seconds to the calendar time
 	        calendar.add(Calendar.SECOND, 00);
@@ -795,7 +794,7 @@ private static String addADayWithMins(String fromDate){
 	        calendar.add(Calendar.HOUR, 9);
 	 
 	        // Add 30 minutes to the calendar time
-	        calendar.add(Calendar.MINUTE, 15);
+	        calendar.add(Calendar.MINUTE, 10);
 	 
 	        // Add 300 seconds to the calendar time
 	        calendar.add(Calendar.SECOND, 00);
@@ -853,7 +852,7 @@ private static TreeMap<String, String> getNSEStarEndDateKeys(
 	
 	do{
 		endate = getDateAfterAddingMins(startDate, minutes);
-		keys.put(startDate, endate);
+		keys.put((getDateAfterAddingMins(startDate, 5)), endate);
 		String startdateWithEndHrs = addEndHrsMins(getyyyyMMddFormat(startDate));
 		System.out.println(startdateWithEndHrs);
 		
@@ -869,10 +868,11 @@ private static TreeMap<String, String> getNSEStarEndDateKeys(
 		
 		
 		
-			
+	System.out.println(startDate);		
+	System.out.println(endTime);	
 		
 		
-	}while(getDate(endate).before(getDate(endTime)));
+	}while(getDate(endate).before(getDate(endTime)) && !(getDate(getDateAfterAddingMins(startDate, 5)).equals(getDate(endTime))));
 
 	for (Entry<String, String> entry : keys.entrySet())
 		System.out.println("Start date " + entry.getKey() + ", End date = "
