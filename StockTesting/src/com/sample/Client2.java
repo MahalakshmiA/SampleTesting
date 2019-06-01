@@ -247,6 +247,16 @@ public class Client2 {
 			TreeMap<String, Details> consolidatedHighLowList = getNSEConsolidatedHighLowList(
 					IstlevelList, nseStartEndDateKeys);
 			System.out.println("consolidatedHighLowList size"+ consolidatedHighLowList.size());
+			for (Entry<String, Details> entry1 : consolidatedHighLowList.entrySet()) {
+				System.out.println(entry1.getKey());
+				Details details = entry1.getValue();
+				System.out.println(details.getHigh());
+				System.out.println(details.getLow());
+				System.out.println(details.getOpen());
+				System.out.println(details.getClose());
+				
+			}
+			
 			
 			
 			// getMarkableList(levelList);
