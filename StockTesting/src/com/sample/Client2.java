@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.net.ssl.HostnameVerifier;
@@ -79,12 +80,19 @@ public class Client2 {
 				return true;
 			}
 		};
+		
+		//https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo
+
+		//	https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&outputsize=full&apikey=demo
+
+		//	Downloadable CSV file:
+		//	https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo&datatype=csv
 		try {
 			// Install the all-trusting host verifier
 			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
-			URL url = new URL(
-					"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=J27JKP9HNK701478");
+			URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=NSE:HDFC&interval=5min&outputsize=full&apikey=J27JKP9HNK701478");
+				//	"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=J27JKP9HNK701478");
 		//"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=5min&apikey=J27JKP9HNK701478");
 			/*
 			 * URL url = new URL(
@@ -108,10 +116,10 @@ public class Client2 {
 			String output;
 			System.out.println("Output from Server .... \n");
 			while ((output = br.readLine()) != null) {
-				System.out.println(output);
+				//System.out.println(output);
 				sb.append(output);
 			}
-			System.out.println(sb.toString());
+			//System.out.println(sb.toString());
 			JsonParser parser = new JsonParser();
 			JsonElement jsonElement = parser.parse(sb.toString());
 			JsonObject rootObject = jsonElement.getAsJsonObject();
@@ -122,7 +130,7 @@ public class Client2 {
 
 			OutputObj obj = gson2.fromJson(sb.toString(), OutputObj.class);
 			
-			System.out.println("List of Timezoe List" + obj.getTimezoneList().size());
+			System.out.println("Size of Timezone List" + obj.getTimezoneList().size());
 
 
 			//Sort the objects 
@@ -134,6 +142,23 @@ public class Client2 {
 			
 			//Sort the objects 
 			TreeMap<String, Details> levelList = new TreeMap<String, Details>();
+			TreeMap<String, Details> IstlevelList = new TreeMap<String, Details>();
+			
+			int noOfDaysToBeCalc = 2;
+			
+			String ToDate = "2019-05-31";
+			String fromDate = getEndDate(ToDate, -noOfDaysToBeCalc);
+			//System.out.println(fromDate);
+			String Defaultminutes = "5";
+			
+			//String dayStartMinutes = "09:15:00";
+		//	String dayEndMinutes = "15:25:00";
+			
+			String fromDateWithMins = addStartHrsMins(fromDate);
+			String endDateWithMins = addEndHrsMins(ToDate);
+			
+			System.out.println(fromDateWithMins);
+			System.out.println(endDateWithMins);
 			
 			for (Entry<String, Timezone> entry : sortedtimezoneList
 					.entrySet()) {
@@ -145,7 +170,7 @@ public class Client2 {
 				double high = Double.parseDouble(entry.getValue().getHigh());
 				double low  = Double.parseDouble(entry.getValue().getLow());
 				
-						details.setOpen(String.valueOf(open));
+				details.setOpen(String.valueOf(open));
 				details.setClose(String.valueOf(close));
 				details.setHigh(String.valueOf(high));
 				details.setLow(String.valueOf(low));
@@ -178,154 +203,53 @@ public class Client2 {
 				
 				// Copy all data from hashMap into TreeMap
 				levelList.put(entry.getKey(), details);
-				
-			
-			}
-			 boolean isfirst = true;
-			 boolean isSecond = true;
-			 TreeMap<String, Details> MarkablelevelList = new TreeMap<String, Details>();
-			List<String> keyList = new ArrayList<String>(levelList.keySet());
-			for(int i = 0; i < keyList.size(); i++) {
-			    String currentkey = keyList.get(i);
-			    Details currentDetails = levelList.get(currentkey);
-			    
-		    	if(isfirst){
-		    		
-		    		isfirst = false;
-		    	}else if(isSecond){
-		    	
-		    		isSecond = false;
-		    		}
-		    	else{
-		    		String previousKey = keyList.get(i-1);
-		    		String nextKey = keyList.get(i+1);
-		    		
-		    		 Details previousDetails = levelList.get(previousKey);
-		    		
-		    		 Details nextDetails = levelList.get(nextKey);
-		    		 
-		    		 if(previousDetails.getCandleType().equalsIgnoreCase("Excited") && nextDetails.getCandleType().equalsIgnoreCase("Excited")
-		    				 && currentDetails.getCandleType().equalsIgnoreCase("Boring")){
-		    			 currentDetails.setMarkableLevel(true);
-		    			 String previousColour = previousDetails.getCandleColour();
-		    			 String nextColour = nextDetails.getCandleColour();
-		    			 if(previousColour.equalsIgnoreCase("Red") && nextColour.equalsIgnoreCase("Red")){
-		    				 currentDetails.setLevelType("DBD");
-		    			 }else if(previousColour.equalsIgnoreCase("Green") && nextColour.equalsIgnoreCase("Green")){
-		    				 currentDetails.setLevelType("RBR");
-		    			 }else if(previousColour.equalsIgnoreCase("Red") && nextColour.equalsIgnoreCase("Green")){
-		    				 currentDetails.setLevelType("DBR");
-		    			 }else if(previousColour.equalsIgnoreCase("Green") && nextColour.equalsIgnoreCase("Red")){
-		    				 currentDetails.setLevelType("RBD");
-		    			 }else{
-		    				 currentDetails.setLevelType("YTD");
-		    			 }
-		    			 
-		    			 i++; 
-		    			 isfirst = true;
-		    			 isSecond = true;
-		    		 }
-		    		 
-		    	}
-		    	MarkablelevelList.put(currentkey, currentDetails);
-		    	
-		    }
-			
-			for (Entry<String, Details> entry : MarkablelevelList.entrySet()) {
-				System.out.println("Start date "
-						+ entry.getKey()
-						+ ", High = "
-						+ entry.getValue().getHigh()
-						+ ","
-						+ "Low = "
-						+ entry.getValue().getLow()
-						+ ", Open = "
-						+ entry.getValue().getOpen()
-						+ ","
-						+ ", Close = "
-						+ entry.getValue().getClose()
-						+ ","
-						+ ", Candle Color = "
-						+ entry.getValue().getCandleColour()
-						+ ", Candle type = "
-						+ entry.getValue().getCandleType()
-						+ ", Candle Height = "
-						+ entry.getValue().getCandleHeight()
-						+ ", Candle Body = "
-						+ entry.getValue().getCandleBody()
-						+ ", Candle Markable List = "
-						+ entry.getValue().isMarkableLevel()
-						+ ", Candle Level Type = "
-						+ entry.getValue().getLevelType()
-						+ ", facotr"
-						+ ", facotr"
-						+ (entry.getValue().getCandleHeight() / entry
-								.getValue().getCandleBody()));
-			}
-			
-			System.out.println("Final Consolidated List--> Starts");
-			for (Entry<String, Details> entry : MarkablelevelList.entrySet()) {
-				
-				if(entry.getValue().isMarkableLevel()){
-				System.out.println("Start date "
-						+ entry.getKey()
-						+ ", High = "
-						+ entry.getValue().getHigh()
-						+ ","
-						+ "Low = "
-						+ entry.getValue().getLow()
-						+ ", Open = "
-						+ entry.getValue().getOpen()
-						+ ","
-						+ ", Close = "
-						+ entry.getValue().getClose()
-						+ ","
-						+ ", Candle Color = "
-						+ entry.getValue().getCandleColour()
-						+ ", Candle type = "
-						+ entry.getValue().getCandleType()
-						+ ", Candle Height = "
-						+ entry.getValue().getCandleHeight()
-						+ ", Candle Body = "
-						+ entry.getValue().getCandleBody()
-						+ ", Candle Markable List = "
-						+ entry.getValue().isMarkableLevel()
-						+ ", Candle Level Type = "
-						+ entry.getValue().getLevelType()
-						+ ", facotr"
-						+ ", facotr"
-						+ (entry.getValue().getCandleHeight() / entry
-								.getValue().getCandleBody()));
+				boolean nseStock = true;
+				if(nseStock){
+					String istTime = getIstTime(entry.getKey());
+					System.out.println(istTime);
+					
+					
+					
+					
+					
+					if (((getDate(istTime).after((getDate(fromDateWithMins))) || getDate(
+							istTime).equals((getDate(fromDateWithMins)))) && (getDate(istTime)
+							.before(getDate(endDateWithMins))))) {
+						IstlevelList.put(istTime, details);
+					}
+					
+					
 				}
+				
+				
+				
+				
+			
+			}
+			System.out.println("IstLevel List size" + IstlevelList.size());
+			System.out.println("Level List size" + levelList.size());
+			
+			//Newest to olddest
+			
+			
+			
+			
+			TreeMap<String, String> nseStartEndDateKeys = new TreeMap<String, String>();
+			
+			nseStartEndDateKeys = getNSEStarEndDateKeys(fromDateWithMins, endDateWithMins, 125);
+			
+			
+			for (Entry<String, String> entry1 : nseStartEndDateKeys.entrySet()) {
+				System.out.println(entry1.getKey() + "-" + entry1.getValue());
+				
 			}
 			
-			System.out.println("Final Consolidated List--> Ends");
-			for (Entry<String, Details> entry : levelList.entrySet()) {
-				System.out.println("Start date "
-						+ entry.getKey()
-						+ ", High = "
-						+ entry.getValue().getHigh()
-						+ ","
-						+ "Low = "
-						+ entry.getValue().getLow()
-						+ ", Open = "
-						+ entry.getValue().getOpen()
-						+ ","
-						+ ", Close = "
-						+ entry.getValue().getClose()
-						+ ","
-						+ ", Candle Color = "
-						+ entry.getValue().getCandleColour()
-						+ ", Candle type = "
-						+ entry.getValue().getCandleType()
-						+ ", Candle Height = "
-						+ entry.getValue().getCandleHeight()
-						+ ", Candle Body = "
-						+ entry.getValue().getCandleBody()
-						+ ", facotr"
-						+ (entry.getValue().getCandleHeight() / entry
-								.getValue().getCandleBody()));
-			}
+			TreeMap<String, Details> consolidatedHighLowList = getNSEConsolidatedHighLowList(
+					IstlevelList, nseStartEndDateKeys);
+			System.out.println("consolidatedHighLowList size"+ consolidatedHighLowList.size());
+			
+			
+			// getMarkableList(levelList);
 
 		
 			
@@ -355,6 +279,157 @@ public class Client2 {
 
 			e.printStackTrace();
 
+		}
+	}
+
+	/**
+	 * @param levelList
+	 */
+	private static void getMarkableList(TreeMap<String, Details> levelList) {
+		boolean isfirst = true;
+		 boolean isSecond = true;
+		 TreeMap<String, Details> MarkablelevelList = new TreeMap<String, Details>();
+		List<String> keyList = new ArrayList<String>(levelList.keySet());
+		for(int i = 0; i < keyList.size(); i++) {
+		    String currentkey = keyList.get(i);
+		    Details currentDetails = levelList.get(currentkey);
+		    
+			if(isfirst){
+				
+				isfirst = false;
+			}else if(isSecond){
+			
+				isSecond = false;
+				}
+			else if(i+1 < keyList.size()){
+				String previousKey = keyList.get(i-1);
+				String nextKey = keyList.get(i+1);
+				
+				 Details previousDetails = levelList.get(previousKey);
+				
+				 Details nextDetails = levelList.get(nextKey);
+				 
+				 if(previousDetails.getCandleType().equalsIgnoreCase("Excited") && nextDetails.getCandleType().equalsIgnoreCase("Excited")
+						 && currentDetails.getCandleType().equalsIgnoreCase("Boring")){
+					 currentDetails.setMarkableLevel(true);
+					 String previousColour = previousDetails.getCandleColour();
+					 String nextColour = nextDetails.getCandleColour();
+					 if(previousColour.equalsIgnoreCase("Red") && nextColour.equalsIgnoreCase("Red")){
+						 currentDetails.setLevelType("DBD");
+					 }else if(previousColour.equalsIgnoreCase("Green") && nextColour.equalsIgnoreCase("Green")){
+						 currentDetails.setLevelType("RBR");
+					 }else if(previousColour.equalsIgnoreCase("Red") && nextColour.equalsIgnoreCase("Green")){
+						 currentDetails.setLevelType("DBR");
+					 }else if(previousColour.equalsIgnoreCase("Green") && nextColour.equalsIgnoreCase("Red")){
+						 currentDetails.setLevelType("RBD");
+					 }else{
+						 currentDetails.setLevelType("YTD");
+					 }
+					 
+					 i++; 
+					 isfirst = true;
+					 isSecond = true;
+				 }
+				 
+			}
+			MarkablelevelList.put(currentkey, currentDetails);
+			
+		}
+		
+		for (Entry<String, Details> entry : MarkablelevelList.entrySet()) {
+			System.out.println("Start date "
+					+ entry.getKey()
+					+ ", High = "
+					+ entry.getValue().getHigh()
+					+ ","
+					+ "Low = "
+					+ entry.getValue().getLow()
+					+ ", Open = "
+					+ entry.getValue().getOpen()
+					+ ","
+					+ ", Close = "
+					+ entry.getValue().getClose()
+					+ ","
+					+ ", Candle Color = "
+					+ entry.getValue().getCandleColour()
+					+ ", Candle type = "
+					+ entry.getValue().getCandleType()
+					+ ", Candle Height = "
+					+ entry.getValue().getCandleHeight()
+					+ ", Candle Body = "
+					+ entry.getValue().getCandleBody()
+					+ ", Candle Markable List = "
+					+ entry.getValue().isMarkableLevel()
+					+ ", Candle Level Type = "
+					+ entry.getValue().getLevelType()
+					+ ", facotr"
+					+ ", facotr"
+					+ (entry.getValue().getCandleHeight() / entry
+							.getValue().getCandleBody()));
+		}
+		
+		System.out.println("Final Consolidated List--> Starts");
+		for (Entry<String, Details> entry : MarkablelevelList.entrySet()) {
+			
+			if(entry.getValue().isMarkableLevel()){
+			System.out.println("Start date "
+					+ entry.getKey()
+					+ ", High = "
+					+ entry.getValue().getHigh()
+					+ ","
+					+ "Low = "
+					+ entry.getValue().getLow()
+					+ ", Open = "
+					+ entry.getValue().getOpen()
+					+ ","
+					+ ", Close = "
+					+ entry.getValue().getClose()
+					+ ","
+					+ ", Candle Color = "
+					+ entry.getValue().getCandleColour()
+					+ ", Candle type = "
+					+ entry.getValue().getCandleType()
+					+ ", Candle Height = "
+					+ entry.getValue().getCandleHeight()
+					+ ", Candle Body = "
+					+ entry.getValue().getCandleBody()
+					+ ", Candle Markable List = "
+					+ entry.getValue().isMarkableLevel()
+					+ ", Candle Level Type = "
+					+ entry.getValue().getLevelType()
+					+ ", facotr"
+					+ ", facotr"
+					+ (entry.getValue().getCandleHeight() / entry
+							.getValue().getCandleBody()));
+			}
+		}
+		
+		System.out.println("Final Consolidated List--> Ends");
+		for (Entry<String, Details> entry : levelList.entrySet()) {
+			System.out.println("Start date "
+					+ entry.getKey()
+					+ ", High = "
+					+ entry.getValue().getHigh()
+					+ ","
+					+ "Low = "
+					+ entry.getValue().getLow()
+					+ ", Open = "
+					+ entry.getValue().getOpen()
+					+ ","
+					+ ", Close = "
+					+ entry.getValue().getClose()
+					+ ","
+					+ ", Candle Color = "
+					+ entry.getValue().getCandleColour()
+					+ ", Candle type = "
+					+ entry.getValue().getCandleType()
+					+ ", Candle Height = "
+					+ entry.getValue().getCandleHeight()
+					+ ", Candle Body = "
+					+ entry.getValue().getCandleBody()
+					+ ", facotr"
+					+ (entry.getValue().getCandleHeight() / entry
+							.getValue().getCandleBody()));
 		}
 	}
 
@@ -395,9 +470,18 @@ public class Client2 {
 		
 		TreeMap<String, String> keys = getStarEndDateKeys(sortedtimezoneList, minutesToAdd);
 
+		/*TreeMap<String, Details> consolidatedHighLowList = getHighLowList(
+				sortedtimezoneList, keys);*/
+		return null;
+	}
+	
+	private static TreeMap<String, Details> getNSEConsolidatedHighLowList(
+			TreeMap<String, Details> IstlevelList,
+			TreeMap<String, String> keys) {
 		TreeMap<String, Details> consolidatedHighLowList = getHighLowList(
-				sortedtimezoneList, keys);
+				IstlevelList, keys);
 		return consolidatedHighLowList;
+		
 	}
 
 	/**
@@ -406,7 +490,7 @@ public class Client2 {
 	 * @return
 	 */
 	private static TreeMap<String, Details> getHighLowList(
-			TreeMap<String, Timezone> sortedtimezoneList,
+			TreeMap<String, Details> IstlevelList,
 			TreeMap<String, String> keys) {
 		TreeMap<String, Details> consolidatedHighLowList = new TreeMap<String, Details>();
 		for (Map.Entry<String, String> entry : keys.entrySet()) {
@@ -415,19 +499,19 @@ public class Client2 {
 			details.setStartDate(entry.getKey());
 			details.setEndDate(entry.getValue());
 
-			for (Map.Entry<String, Timezone> entry2 : sortedtimezoneList
+			for (Map.Entry<String, Details> entry2 : IstlevelList
 					.entrySet()) {
 				if (entry.getKey().equalsIgnoreCase(entry2.getKey())) {
-					Timezone zone2 = entry2.getValue();
+					Details zone2 = entry2.getValue();
 					details.setOpen(zone2.getOpen());
 					break;
 
 				}
 			}
-			for (Map.Entry<String, Timezone> entry2 : sortedtimezoneList
+			for (Map.Entry<String, Details> entry2 : IstlevelList
 					.entrySet()) {
 				if (entry.getValue().equalsIgnoreCase(entry2.getKey())) {
-					Timezone zone2 = entry2.getValue();
+					Details zone2 = entry2.getValue();
 					details.setClose(zone2.getClose());
 					break;
 
@@ -437,8 +521,8 @@ public class Client2 {
 			String highValue = "";
 			String lowValue = "";
 
-			Map<String, ArrayList<String>> highLow = gethigh(
-					entry.getKey(), entry.getValue(), sortedtimezoneList);
+			Map<String, ArrayList<String>> highLow = gethighGetLow(
+					entry.getKey(), entry.getValue(), IstlevelList);
 			ArrayList<String> highList = highLow.get("High");
 			
 
@@ -479,12 +563,12 @@ public class Client2 {
 
 			startdate = entry.getKey();
 			if (flag == true) {
-				enddate = getDateAfterAdding(entry.getKey(), minutes);
+				enddate = getDateAfterAddingMins(entry.getKey(), minutes);
 				System.out.println(enddate);
 				keys.put(startdate, enddate);
 				flag = false;
 			} else if ((getDate(startdate).after(getDate(enddate)))) {
-				enddate = getDateAfterAdding(entry.getKey(), minutes);
+				enddate = getDateAfterAddingMins(entry.getKey(), minutes);
 				System.out.println(enddate);
 				keys.put(startdate, enddate);
 				flag = false;
@@ -500,19 +584,19 @@ public class Client2 {
 		return keys;
 	}
 
-	private static Map<String, ArrayList<String>> gethigh(String startDate,
-			String endDate, TreeMap<String, Timezone> sortedtimezoneList) {
+	private static Map<String, ArrayList<String>> gethighGetLow(String startDate,
+			String endDate, TreeMap<String, Details> IstlevelList) {
 
 		Map<String, ArrayList<String>> highLow = new HashMap<String, ArrayList<String>>();
 
 		ArrayList<String> highList = new ArrayList<>();
 		ArrayList<String> lowList = new ArrayList<>();
 
-		for (Map.Entry<String, Timezone> entry2 : sortedtimezoneList.entrySet()) {
+		for (Map.Entry<String, Details> entry2 : IstlevelList.entrySet()) {
 			try {
 				if ((getDate(entry2.getKey()).after(getDate(startDate)) && (getDate(entry2
 						.getKey()).before(getDate(endDate))))) {
-					Timezone zone2 = entry2.getValue();
+					Details zone2 = entry2.getValue();
 					highList.add(zone2.getHigh());
 					lowList.add(zone2.getLow());
 
@@ -529,7 +613,7 @@ public class Client2 {
 		return highLow;
 	}
 
-	private static String getDateAfterAdding(String dateString, int minutes)
+	private static String getDateAfterAddingMins(String dateString, int minutes)
 			throws ParseException {
 
 		DateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -584,5 +668,208 @@ public class Client2 {
 		Date tempdate = inFormat.parse(dateString);
 		return tempdate;
 	}
+	
+	private static String getIstTime(String estTime){
+	
+	 SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    dateTimeFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+     //(EST)
+    Date date = null;
+	try {
+		date = dateTimeFormat.parse(estTime);
+	} catch (ParseException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    timeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
+    String istTime = timeFormat.format(date);
+    System.out.println("Time EST = " + estTime);
+    System.out.println("Time IST = " + istTime);
+    return istTime;
+	}
+	
+	private static String getEndDate(String strtDate, int noOfDays){
+		
+		System.out.println("Date before Addition: "+strtDate);
+		//Specifying date format that matches the given date
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar c = Calendar.getInstance();
+		try{
+		   //Setting the date to the given date
+		   c.setTime(sdf.parse(strtDate));
+		}catch(ParseException e){
+			e.printStackTrace();
+		 }
+		   
+		//Number of Days to add
+		c.add(Calendar.DAY_OF_MONTH, noOfDays);  
+		//Date after adding the days to the given date
+		String newDate = sdf.format(c.getTime());  
+		//Displaying the new Date after addition of Days
+		//System.out.println("Date after Addition: "+newDate);
+		return newDate;
+	}
+	
+	private static String addStartHrsMins(String fromDate){
+		
+		
+		//Specifying date format that matches the given date
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		try{
+		   //Setting the date to the given date
+			calendar.setTime(sdf.parse(fromDate));
+		}catch(ParseException e){
+			e.printStackTrace();
+		 }
+		   
+	      
+	       // System.out.println("Original = " + calendar.getTime());
+	 
+	        // Substract 2 hour from the current time
+	        calendar.add(Calendar.HOUR, 9);
+	 
+	        // Add 30 minutes to the calendar time
+	        calendar.add(Calendar.MINUTE, 15);
+	 
+	        // Add 300 seconds to the calendar time
+	        calendar.add(Calendar.SECOND, 00);
+	        //System.out.println("Updated  = " + calendar.getTime());
+	        DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	      //Date after adding the days to the given date
+			String newDate = timeFormat.format(calendar.getTime());  
+			//Displaying the new Date after addition of Days
+			//System.out.println("Date after Addition: "+newDate);
+		return newDate;
+		
+	}
+	
+	private static String getyyyyMMddFormat(String fromDate){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar calendar = Calendar.getInstance();
+		try{
+		   //Setting the date to the given date
+			calendar.setTime(sdf.parse(fromDate));
+		}catch(ParseException e){
+			e.printStackTrace();
+		 }
+
+	        DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd");
+	      //Date after adding the days to the given date
+			String newDate = timeFormat.format(calendar.getTime());  
+			//Displaying the new Date after addition of Days
+			//System.out.println("Date after Addition: "+newDate);
+		return newDate;
+		
+	}
+	
+private static String addADayWithMins(String fromDate){
+		
+		
+		//Specifying date format that matches the given date
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		try{
+		   //Setting the date to the given date
+			calendar.setTime(sdf.parse(fromDate));
+		}catch(ParseException e){
+			e.printStackTrace();
+		 }
+		   
+	      
+	       // System.out.println("Original = " + calendar.getTime());
+		calendar.add(Calendar.DATE, 1);
+	 
+	        // Substract 2 hour from the current time
+	        calendar.add(Calendar.HOUR, 9);
+	 
+	        // Add 30 minutes to the calendar time
+	        calendar.add(Calendar.MINUTE, 15);
+	 
+	        // Add 300 seconds to the calendar time
+	        calendar.add(Calendar.SECOND, 00);
+	        //System.out.println("Updated  = " + calendar.getTime());
+	        DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	      //Date after adding the days to the given date
+			String newDate = timeFormat.format(calendar.getTime());  
+			//Displaying the new Date after addition of Days
+			//System.out.println("Date after Addition: "+newDate);
+		return newDate;
+		
+	}
+	
+private static String addEndHrsMins(String dateString){
+		
+		
+		//Specifying date format that matches the given date
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		try{
+		   //Setting the date to the given date
+			calendar.setTime(sdf.parse(dateString));
+		}catch(ParseException e){
+			e.printStackTrace();
+		 }
+		   
+	      
+	        //System.out.println("Original = " + calendar.getTime());
+	 
+	        // Substract 2 hour from the current time
+	        calendar.add(Calendar.HOUR, 15);
+	 
+	        // Add 30 minutes to the calendar time
+	        calendar.add(Calendar.MINUTE, 30);
+	 
+	        // Add 300 seconds to the calendar time
+	        calendar.add(Calendar.SECOND, 00);
+	        //System.out.println("Updated  = " + calendar.getTime());
+	   
+	        DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	      //Date after adding the days to the given date
+			String newDate = timeFormat.format(calendar.getTime());  
+			//Displaying the new Date after addition of Days
+			//System.out.println("Date after Addition: "+newDate);
+		return newDate;
+		
+	}
+
+private static TreeMap<String, String> getNSEStarEndDateKeys(
+		String starttime, String endTime, int minutes) throws ParseException {
+	TreeMap<String, String> keys = new TreeMap<String, String>();
+
+	String endate = null;
+	String startDate = starttime;
+	
+	do{
+		endate = getDateAfterAddingMins(startDate, minutes);
+		keys.put(startDate, endate);
+		String startdateWithEndHrs = addEndHrsMins(getyyyyMMddFormat(startDate));
+		System.out.println(startdateWithEndHrs);
+		
+		if(getDate(endate).before(getDate(endTime))){
+		if(getDate(endate).after(getDate(startdateWithEndHrs))){
+			startDate = addADayWithMins(getyyyyMMddFormat(startdateWithEndHrs));
+		}
+		else{
+			startDate = endate;
+			//startDate = getDateAfterAddingMins(endate, 5);
+		}
+		}
+		
+		
+		
+			
+		
+		
+	}while(getDate(endate).before(getDate(endTime)));
+
+	for (Entry<String, String> entry : keys.entrySet())
+		System.out.println("Start date " + entry.getKey() + ", End date = "
+				+ entry.getValue());
+
+	System.out.println("Start date and end date keys Size" + keys.size());
+	return keys;
+}
 
 }
