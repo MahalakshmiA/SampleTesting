@@ -255,7 +255,7 @@ public class Client2 {
                                   IstlevelList, nseStartEndDateKeys);
                      System.out.println("consolidatedHighLowList size"+ consolidatedHighLowList.size());
                      for (Entry<String, Details> entry1 : consolidatedHighLowList.entrySet()) {
-                           System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close -" +entry1.getValue().getClose());
+                           System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close - " +entry1.getValue().getClose());
                            
                            
                            
@@ -507,7 +507,7 @@ public class Client2 {
        private static TreeMap<String, Details> getHighLowList(
                      TreeMap<String, Details> IstlevelList,
                      TreeMap<String, String> keys)  {
-              TreeMap<String, Details> consolidatedHighLowList = new TreeMap<String, Details>();
+              TreeMap<String, Details> consolidatedHighLowList = new TreeMap<String, Details>(Collections.reverseOrder());
               try {
               for (Map.Entry<String, String> entry : keys.entrySet()) {
                      Details details = new Details();
