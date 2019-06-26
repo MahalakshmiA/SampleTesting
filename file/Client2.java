@@ -150,9 +150,9 @@ public class Client2 {
                      TreeMap<String, Details> levelList = new TreeMap<String, Details>();
                      TreeMap<String, Details> IstlevelList = new TreeMap<String, Details>();
                      
-                     int noOfDaysToBeCalc = 100;
+                     int noOfDaysToBeCalc = 2;
                      
-                     String ToDate = "2019-06-25";
+                     String ToDate = "2019-06-27";
                      String fromDate = getEndDate(ToDate, -noOfDaysToBeCalc);
                      //System.out.println(fromDate);
                      //String Defaultminutes = "5";
@@ -240,7 +240,8 @@ public class Client2 {
                      
                      
                      
-                     
+                     boolean is120 = false;
+                     if(is120){
                      TreeMap<String, String> nseStartEndDateKeys = new TreeMap<String, String>();
                      
                      nseStartEndDateKeys = getNSEStarEndDateKeys(fromDateWithMins, endDateWithMins, minutestoAdd);
@@ -260,6 +261,32 @@ public class Client2 {
                            
                            
                      }
+                     }else{
+                    	ArrayList<String> nseStartTimeList = new  ArrayList<String>();
+                    	nseStartTimeList = getNSEStartDateList(fromDateWithMins, endDateWithMins, minutestoAdd);
+                    	for(String s : nseStartTimeList){
+                    		//System.out.println(s);
+                    		
+                    	}
+                    	
+                    	 TreeMap<String, Details> newlevelList = new TreeMap<String, Details>(Collections.reverseOrder());
+                    	 for(Entry<String, Details> entry : IstlevelList
+                                 .entrySet()){
+                    		 if(nseStartTimeList.contains(entry.getKey())){
+                    			 
+                    			 newlevelList.put(entry.getKey(), entry.getValue());
+                    		 }
+                    		 
+                    	 }
+                    	 
+                    	 for (Entry<String, Details> entry1 : newlevelList.entrySet()) {
+                             System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close - " +entry1.getValue().getClose());
+                             
+                             
+                             
+                       }
+                     }
+                     
                      
                      
                      
@@ -899,6 +926,48 @@ private static TreeMap<String, String> getNSEStarEndDateKeys(
 
 //       System.out.println("Start date and end date keys Size" + keys.size());
        return keys;
+}
+
+private static ArrayList<String> getNSEStartDateList(
+        String starttime, String endTime, int minutes) throws ParseException {
+ArrayList<String> keys = new ArrayList<String>();
+
+ 
+ String startDate = starttime;
+ 
+ do{
+	 
+       
+        //keys.put((getDateAfterAddingMins(startDate, minutestoAdd)), endate);
+       
+        String startdateWithEndHrs = addEndHrsMins(getyyyyMMddFormat(startDate), 15);
+ //     System.out.println(startdateWithEndHrs);
+        
+        if(getDate(startDate).before(getDate(endTime)) || getDate(startDate).equals(getDate(endTime))){
+        if(getDate(startDate).after(getDate(startdateWithEndHrs))){
+               startDate = addADayWithMins(getyyyyMMddFormat(startdateWithEndHrs));
+        }
+        else{
+        		keys.add(startDate);
+               startDate = getDateAfterAddingMins(startDate, 60);
+               
+        }
+        }
+        
+        
+        
+ //System.out.println(startDate);        
+ //System.out.println(endTime);   
+        
+        
+ }while(getDate(startDate).before(getDate(endTime)) || getDate(startDate).equals(getDate(endTime)) || (getDate(getDateAfterAddingMins(startDate, 60)).equals(getDate(endTime))));
+
+/* for (Entry<String, String> entry : keys.entrySet())
+        System.out.println("Start date " + entry.getKey() + ", End date = "
+                     + entry.getValue());*/
+
+// System.out.println("Start date and end date keys Size" + keys.size());
+ return keys;
 }
 
 }
