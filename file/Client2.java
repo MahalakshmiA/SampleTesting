@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -60,269 +62,273 @@ public class Client2 {
        protected static Gson GSON = new Gson();
 
        public static void main(String[] args) throws Exception {
-              // Create a trust manager that does not validate certificate chains
-              TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-                     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                           return null;
-                     }
+              getCombinedCandle();
+       }
 
-                     public void checkClientTrusted(X509Certificate[] certs,
-                                  String authType) {
-                     }
+	public static void getCombinedCandle() throws NoSuchAlgorithmException, KeyManagementException, ParseException {
+		// Create a trust manager that does not validate certificate chains
+		  TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+		         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+		               return null;
+		         }
 
-                     public void checkServerTrusted(X509Certificate[] certs,
-                                  String authType) {
-                     }
-              } };
+		         public void checkClientTrusted(X509Certificate[] certs,
+		                      String authType) {
+		         }
 
-              // Install the all-trusting trust manager
-              SSLContext sc = SSLContext.getInstance("SSL");
-              sc.init(null, trustAllCerts, new java.security.SecureRandom());
-              HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		         public void checkServerTrusted(X509Certificate[] certs,
+		                      String authType) {
+		         }
+		  } };
 
-              // Create all-trusting host name verifier
-              HostnameVerifier allHostsValid = new HostnameVerifier() {
-                     public boolean verify(String hostname, SSLSession session) {
-                           return true;
-                     }
-              };
-              
-              //https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo
+		  // Install the all-trusting trust manager
+		  SSLContext sc = SSLContext.getInstance("SSL");
+		  sc.init(null, trustAllCerts, new java.security.SecureRandom());
+		  HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
-              //     https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&outputsize=full&apikey=demo
+		  // Create all-trusting host name verifier
+		  HostnameVerifier allHostsValid = new HostnameVerifier() {
+		         public boolean verify(String hostname, SSLSession session) {
+		               return true;
+		         }
+		  };
+		  
+		  //https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo
 
-              //     Downloadable CSV file:
-              //     https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo&datatype=csv
-              try {
-                     // Install the all-trusting host verifier
-                     HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+		  //     https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&outputsize=full&apikey=demo
 
-                     URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=^NSEI&interval=60min&outputsize=full&apikey=J27JKP9HNK701478");
-                           //     "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=J27JKP9HNK701478");
-              //"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=5min&apikey=J27JKP9HNK701478");
-                     /*
-                     * URL url = new URL(
-                     * "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=1min&apikey=J27JKP9HNK701478"
-                     * );
-                     */
-                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                     conn.setRequestMethod("GET");
-                     conn.setRequestProperty("Accept", "application/json");
+		  //     Downloadable CSV file:
+		  //     https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo&datatype=csv
+		  try {
+		         // Install the all-trusting host verifier
+		         HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
-                     if (conn.getResponseCode() != 200) {
-                           throw new RuntimeException("Failed : HTTP error code : "
-                                         + conn.getResponseCode());
-                     }
+		         URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=^NSEI&interval=60min&outputsize=full&apikey=J27JKP9HNK701478");
+		               //     "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=J27JKP9HNK701478");
+		  //"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=5min&apikey=J27JKP9HNK701478");
+		         /*
+		         * URL url = new URL(
+		         * "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=1min&apikey=J27JKP9HNK701478"
+		         * );
+		         */
+		         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		         conn.setRequestMethod("GET");
+		         conn.setRequestProperty("Accept", "application/json");
 
-                     BufferedReader br = new BufferedReader(new InputStreamReader(
-                                  (conn.getInputStream())));
+		         if (conn.getResponseCode() != 200) {
+		               throw new RuntimeException("Failed : HTTP error code : "
+		                             + conn.getResponseCode());
+		         }
 
-                     StringBuilder sb = new StringBuilder();
+		         BufferedReader br = new BufferedReader(new InputStreamReader(
+		                      (conn.getInputStream())));
 
-                     String output;
-                     System.out.println("Output from Server .... \n");
-                     while ((output = br.readLine()) != null) {
-                           //System.out.println(output);
-                           sb.append(output);
-                     }
-                     //System.out.println(sb.toString());
-                     JsonParser parser = new JsonParser();
-                     JsonElement jsonElement = parser.parse(sb.toString());
-                     JsonObject rootObject = jsonElement.getAsJsonObject();
+		         StringBuilder sb = new StringBuilder();
 
-                     Gson gson = new Gson();
-                     Gson gson2 = new GsonBuilder().registerTypeAdapter(OutputObj.class,
-                                  new MyDeserializer()).create();
+		         String output;
+		         System.out.println("Output from Server .... \n");
+		         while ((output = br.readLine()) != null) {
+		               //System.out.println(output);
+		               sb.append(output);
+		         }
+		         //System.out.println(sb.toString());
+		         JsonParser parser = new JsonParser();
+		         JsonElement jsonElement = parser.parse(sb.toString());
+		         JsonObject rootObject = jsonElement.getAsJsonObject();
 
-                     OutputObj obj = gson2.fromJson(sb.toString(), OutputObj.class);
-                     
+		         Gson gson = new Gson();
+		         Gson gson2 = new GsonBuilder().registerTypeAdapter(OutputObj.class,
+		                      new MyDeserializer()).create();
+
+		         OutputObj obj = gson2.fromJson(sb.toString(), OutputObj.class);
+		         
 //                     System.out.println("Size of Timezone List" + obj.getTimezoneList().size());
 
 
-                     //Sort the objects 
-                     TreeMap<String, Timezone> sortedtimezoneList = new TreeMap<String, Timezone>();
+		         //Sort the objects 
+		         TreeMap<String, Timezone> sortedtimezoneList = new TreeMap<String, Timezone>();
 
-                     // Copy all data from hashMap into TreeMap
-                     sortedtimezoneList.putAll(obj.getTimezoneList());
-                     
-                     
-                     //Sort the objects 
-                     TreeMap<String, Details> levelList = new TreeMap<String, Details>();
-                     TreeMap<String, Details> IstlevelList = new TreeMap<String, Details>();
-                     
-                     int noOfDaysToBeCalc = 150;
-                     
-                     String ToDate = "2019-06-27";
-                     String fromDate = getEndDate(ToDate, -noOfDaysToBeCalc);
-                     //System.out.println(fromDate);
-                     //String Defaultminutes = "5";
-                     
-                     //String dayStartMinutes = "09:15:00";
-              //     String dayEndMinutes = "15:25:00";
-                     
-                     String fromDateWithMins = addStartHrsMins(fromDate);
-                     String endDateWithMins = addEndHrsMins(ToDate , 15);
-                     
-                     System.out.println(fromDateWithMins);
+		         // Copy all data from hashMap into TreeMap
+		         sortedtimezoneList.putAll(obj.getTimezoneList());
+		         
+		         
+		         //Sort the objects 
+		         TreeMap<String, Details> levelList = new TreeMap<String, Details>();
+		         TreeMap<String, Details> IstlevelList = new TreeMap<String, Details>();
+		         
+		         int noOfDaysToBeCalc = 150;
+		         
+		         String ToDate = "2019-06-27";
+		         String fromDate = getEndDate(ToDate, -noOfDaysToBeCalc);
+		         //System.out.println(fromDate);
+		         //String Defaultminutes = "5";
+		         
+		         //String dayStartMinutes = "09:15:00";
+		  //     String dayEndMinutes = "15:25:00";
+		         
+		         String fromDateWithMins = addStartHrsMins(fromDate);
+		         String endDateWithMins = addEndHrsMins(ToDate , 15);
+		         
+		         System.out.println(fromDateWithMins);
 //                     System.out.println(endDateWithMins);
-                     
-                     for (Entry<String, Timezone> entry : sortedtimezoneList
-                                  .entrySet()) {
-                           
-                           Details details = new Details();
-                           
-                           double close = Double.parseDouble(entry.getValue().getClose());
-                           double open = Double.parseDouble(entry.getValue().getOpen());
-                           double high = Double.parseDouble(entry.getValue().getHigh());
-                           double low  = Double.parseDouble(entry.getValue().getLow());
-                           
-                           details.setOpen(String.valueOf(open));
-                           details.setClose(String.valueOf(close));
-                           details.setHigh(String.valueOf(high));
-                           details.setLow(String.valueOf(low));
-                           
-                           
-                           
-                           if(close > open){
-                                  details.setCandleColour("Green");
-                           }else{
-                                  details.setCandleColour("Red");
-                           }
-                           
-                           
-                           double candleHeight = Math.abs(high - low);
-                           double candleBody = Math.abs(close - open);
-                           
-                           details.setCandleHeight(candleHeight);
-                           
-                           details.setCandleBody(candleBody);
-                           
-                           if(candleHeight/candleBody > 2){
-                                  details.setCandleType("Excited");
-                           }else{
-                                  details.setCandleType("Boring");
-                           }
-                           
-                           
-                           
-                           
-                           
-                           // Copy all data from hashMap into TreeMap
-                           levelList.put(entry.getKey(), details);
-                           boolean nseStock = true;
-                           if(nseStock){
-                                  String istTime = getIstTime(entry.getKey());
-                                  //System.out.println("istTime->"+istTime);
-                                  
-                                  
-                                  
-                                  
-                                  
-                                  if (((getDate(istTime).equals((getDate(fromDateWithMins))))
-                                                || (getDate(istTime).after((getDate(fromDateWithMins)))))
-                                                && ((getDate(istTime).before(getDate(endDateWithMins))
-                           || (getDate(istTime).equals(getDate(endDateWithMins)))))) {
-                                         IstlevelList.put(istTime, details);
+		         
+		         for (Entry<String, Timezone> entry : sortedtimezoneList
+		                      .entrySet()) {
+		               
+		               Details details = new Details();
+		               
+		               double close = Double.parseDouble(entry.getValue().getClose());
+		               double open = Double.parseDouble(entry.getValue().getOpen());
+		               double high = Double.parseDouble(entry.getValue().getHigh());
+		               double low  = Double.parseDouble(entry.getValue().getLow());
+		               
+		               details.setOpen(String.valueOf(open));
+		               details.setClose(String.valueOf(close));
+		               details.setHigh(String.valueOf(high));
+		               details.setLow(String.valueOf(low));
+		               
+		               
+		               
+		               if(close > open){
+		                      details.setCandleColour("Green");
+		               }else{
+		                      details.setCandleColour("Red");
+		               }
+		               
+		               
+		               double candleHeight = Math.abs(high - low);
+		               double candleBody = Math.abs(close - open);
+		               
+		               details.setCandleHeight(candleHeight);
+		               
+		               details.setCandleBody(candleBody);
+		               
+		               if(candleHeight/candleBody > 2){
+		                      details.setCandleType("Excited");
+		               }else{
+		                      details.setCandleType("Boring");
+		               }
+		               
+		               
+		               
+		               
+		               
+		               // Copy all data from hashMap into TreeMap
+		               levelList.put(entry.getKey(), details);
+		               boolean nseStock = true;
+		               if(nseStock){
+		                      String istTime = getIstTime(entry.getKey());
+		                      //System.out.println("istTime->"+istTime);
+		                      
+		                      
+		                      
+		                      
+		                      
+		                      if (((getDate(istTime).equals((getDate(fromDateWithMins))))
+		                                    || (getDate(istTime).after((getDate(fromDateWithMins)))))
+		                                    && ((getDate(istTime).before(getDate(endDateWithMins))
+		               || (getDate(istTime).equals(getDate(endDateWithMins)))))) {
+		                             IstlevelList.put(istTime, details);
 //                                         System.out.println("istTime Added" + istTime);
-                                  }
-                                  
-                                  
-                           }
-                           
-                           
-                           
-                           
-                     
-                     }
-                     System.out.println("IstLevel List size" + IstlevelList.size());
+		                      }
+		                      
+		                      
+		               }
+		               
+		               
+		               
+		               
+		         
+		         }
+		         System.out.println("IstLevel List size" + IstlevelList.size());
 //                     System.out.println("Level List size" + levelList.size());
-                     
-                     //Newest to olddest
-                     
-                     
-                     
-                     boolean is120 = true;
-                     if(is120){
-                     TreeMap<String, String> nseStartEndDateKeys = new TreeMap<String, String>();
-                     
-                     nseStartEndDateKeys = getNSEStarEndDateKeys(fromDateWithMins, endDateWithMins, minutestoAdd);
-                     
-                     
-                     for (Entry<String, String> entry1 : nseStartEndDateKeys.entrySet()) {
+		         
+		         //Newest to olddest
+		         
+		         
+		         
+		         boolean is120 = true;
+		         if(is120){
+		         TreeMap<String, String> nseStartEndDateKeys = new TreeMap<String, String>();
+		         
+		         nseStartEndDateKeys = getNSEStarEndDateKeys(fromDateWithMins, endDateWithMins, minutestoAdd);
+		         
+		         
+		         for (Entry<String, String> entry1 : nseStartEndDateKeys.entrySet()) {
 //                           System.out.println(entry1.getKey() + "-" + entry1.getValue());
-                           
-                     }
-                     
-                     TreeMap<String, Details> consolidatedHighLowList = getNSEConsolidatedHighLowList(
-                                  IstlevelList, nseStartEndDateKeys);
-                     System.out.println("consolidatedHighLowList size"+ consolidatedHighLowList.size());
-                     for (Entry<String, Details> entry1 : consolidatedHighLowList.entrySet()) {
-                           System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close - " +entry1.getValue().getClose());
-                           
-                           
-                           
-                     }
-                     }else{
-                    	ArrayList<String> nseStartTimeList = new  ArrayList<String>();
-                    	nseStartTimeList = getNSEStartDateList(fromDateWithMins, endDateWithMins, minutestoAdd);
-                    	for(String s : nseStartTimeList){
-                    		//System.out.println(s);
-                    		
-                    	}
-                    	
-                    	 TreeMap<String, Details> newlevelList = new TreeMap<String, Details>(Collections.reverseOrder());
-                    	 for(Entry<String, Details> entry : IstlevelList
-                                 .entrySet()){
-                    		 if(nseStartTimeList.contains(entry.getKey())){
-                    			 
-                    			 newlevelList.put(entry.getKey(), entry.getValue());
-                    		 }
-                    		 
-                    	 }
-                    	 
-                    	 for (Entry<String, Details> entry1 : newlevelList.entrySet()) {
-                             System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close - " +entry1.getValue().getClose());
-                             
-                             
-                             
-                       }
-                     }
-                     
-                     
-                     
-                     
-                     // getMarkableList(levelList);
+		               
+		         }
+		         
+		         TreeMap<String, Details> consolidatedHighLowList = getNSEConsolidatedHighLowList(
+		                      IstlevelList, nseStartEndDateKeys);
+		         System.out.println("consolidatedHighLowList size"+ consolidatedHighLowList.size());
+		         for (Entry<String, Details> entry1 : consolidatedHighLowList.entrySet()) {
+		               System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close - " +entry1.getValue().getClose());
+		               
+		               
+		               
+		         }
+		         }else{
+		        	ArrayList<String> nseStartTimeList = new  ArrayList<String>();
+		        	nseStartTimeList = getNSEStartDateList(fromDateWithMins, endDateWithMins, minutestoAdd);
+		        	for(String s : nseStartTimeList){
+		        		//System.out.println(s);
+		        		
+		        	}
+		        	
+		        	 TreeMap<String, Details> newlevelList = new TreeMap<String, Details>(Collections.reverseOrder());
+		        	 for(Entry<String, Details> entry : IstlevelList
+		                     .entrySet()){
+		        		 if(nseStartTimeList.contains(entry.getKey())){
+		        			 
+		        			 newlevelList.put(entry.getKey(), entry.getValue());
+		        		 }
+		        		 
+		        	 }
+		        	 
+		        	 for (Entry<String, Details> entry1 : newlevelList.entrySet()) {
+		                 System.out.println(entry1.getKey() +"| High - " + entry1.getValue().getHigh() +"| Low - " +entry1.getValue().getLow() +"| Open - " + entry1.getValue().getOpen()+"| Close - " +entry1.getValue().getClose());
+		                 
+		                 
+		                 
+		           }
+		         }
+		         
+		         
+		         
+		         
+		         // getMarkableList(levelList);
 
-              
-                     
-                     
-                     
+		  
+		         
+		         
+		         
 
-              //     addMinutes(sortedtimezoneList);
+		  //     addMinutes(sortedtimezoneList);
 
-                     /*
-                     * String baseURL = "http://finance.yahoo.com/d/quotes.csv?s=";
-                     * 
-                      * // add the stocks we want data for baseURL = addSymbols(baseURL,
-                     * stockSymbolsAndNames.keySet(), "+");
-                     * 
-                      * // after the stock symbols are added the symbols // for the
-                     * requested data fields are added baseURL += "&f="; baseURL =
-                     * addSymbols(baseURL, readSymbols(DATA_SYMBOL_FILE), "");
-                     */
+		         /*
+		         * String baseURL = "http://finance.yahoo.com/d/quotes.csv?s=";
+		         * 
+		          * // add the stocks we want data for baseURL = addSymbols(baseURL,
+		         * stockSymbolsAndNames.keySet(), "+");
+		         * 
+		          * // after the stock symbols are added the symbols // for the
+		         * requested data fields are added baseURL += "&f="; baseURL =
+		         * addSymbols(baseURL, readSymbols(DATA_SYMBOL_FILE), "");
+		         */
 
-                     conn.disconnect();
+		         conn.disconnect();
 
-              } catch (MalformedURLException e) {
+		  } catch (MalformedURLException e) {
 
-                     e.printStackTrace();
+		         e.printStackTrace();
 
-              } catch (IOException e) {
+		  } catch (IOException e) {
 
-                     e.printStackTrace();
+		         e.printStackTrace();
 
-              }
-       }
+		  }
+	}
 
        /**
        * @param levelList
