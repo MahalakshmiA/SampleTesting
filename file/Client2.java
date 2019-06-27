@@ -97,7 +97,7 @@ public class Client2 {
                      // Install the all-trusting host verifier
                      HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
-                     URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=^NSEI&interval=60min&outputsize=compact&apikey=J27JKP9HNK701478");
+                     URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=^NSEI&interval=60min&outputsize=full&apikey=J27JKP9HNK701478");
                            //     "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=J27JKP9HNK701478");
               //"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AMZN&interval=5min&apikey=J27JKP9HNK701478");
                      /*
@@ -150,7 +150,7 @@ public class Client2 {
                      TreeMap<String, Details> levelList = new TreeMap<String, Details>();
                      TreeMap<String, Details> IstlevelList = new TreeMap<String, Details>();
                      
-                     int noOfDaysToBeCalc = 2;
+                     int noOfDaysToBeCalc = 150;
                      
                      String ToDate = "2019-06-27";
                      String fromDate = getEndDate(ToDate, -noOfDaysToBeCalc);
@@ -220,7 +220,8 @@ public class Client2 {
                                   
                                   if (((getDate(istTime).equals((getDate(fromDateWithMins))))
                                                 || (getDate(istTime).after((getDate(fromDateWithMins)))))
-                                                && (getDate(istTime).before(getDate(endDateWithMins)))) {
+                                                && ((getDate(istTime).before(getDate(endDateWithMins))
+                           || (getDate(istTime).equals(getDate(endDateWithMins)))))) {
                                          IstlevelList.put(istTime, details);
 //                                         System.out.println("istTime Added" + istTime);
                                   }
@@ -240,7 +241,7 @@ public class Client2 {
                      
                      
                      
-                     boolean is120 = false;
+                     boolean is120 = true;
                      if(is120){
                      TreeMap<String, String> nseStartEndDateKeys = new TreeMap<String, String>();
                      
