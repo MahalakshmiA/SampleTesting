@@ -58,15 +58,28 @@ public class HourlyHandler {
 		String interval = "60min";
 		boolean nseStock = true;
 		boolean is120 = false;
-		getHourlyCandlesList(symbol, interval, nseStock, is120);
+		try {
+			TreeMap<String, Details> sortedCandlesList = getCandlesList(symbol, interval);
+			getHourlyCandlesList(sortedCandlesList, nseStock, is120);
+		} catch (KeyManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 
 	}
 
-	public static TreeMap<String, Details> getHourlyCandlesList(String symbol, String interval, boolean nseStock,
+	public static TreeMap<String, Details> getHourlyCandlesList(TreeMap<String, Details> sortedCandlesList, boolean nseStock,
 			boolean is120) {
 		TreeMap<String, Details> consolidatedHrlyCandlesList = new TreeMap<String, Details>();
 		try {
-			TreeMap<String, Details> sortedCandlesList = getCandlesList(symbol, interval);
+			
 			int noOfDaysToBeCalc = 200;
 
 			String ToDate = getCurrentDateAsString();
@@ -81,7 +94,7 @@ public class HourlyHandler {
 						is120);
 
 			}
-		} catch (KeyManagementException | NoSuchAlgorithmException | ParseException e) {
+		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -178,24 +191,6 @@ public class HourlyHandler {
 				details.setHigh(String.valueOf(high));
 				details.setLow(String.valueOf(low));
 
-				if (close > open) {
-					details.setCandleColour("Green");
-				} else {
-					details.setCandleColour("Red");
-				}
-
-				double candleHeight = Math.abs(high - low);
-				double candleBody = Math.abs(close - open);
-
-				details.setCandleHeight(candleHeight);
-
-				details.setCandleBody(candleBody);
-
-				if (candleHeight / candleBody > 2) {
-					details.setCandleType("Excited");
-				} else {
-					details.setCandleType("Boring");
-				}
 
 				// Copy all data from hashMap into TreeMap
 				sortedCandlesList.put(entry.getKey(), details);
@@ -270,10 +265,40 @@ public class HourlyHandler {
 			}
 		}
 		System.out.println("consolidatedHighLowList size" + consolidatedHrlyCandlesList.size());
-		for (Entry<String, Details> entry1 : consolidatedHrlyCandlesList.entrySet()) {
-			System.out.println(entry1.getKey() + "| High - " + entry1.getValue().getHigh() + "| Low - "
+		for (Entry<String, Details> entry : consolidatedHrlyCandlesList.entrySet()) {
+			/*System.out.println(entry1.getKey() + "| High - " + entry1.getValue().getHigh() + "| Low - "
 					+ entry1.getValue().getLow() + "| Open - " + entry1.getValue().getOpen() + "| Close - "
-					+ entry1.getValue().getClose());
+					+ entry1.getValue().getClose());*/
+			
+			Details details = entry.getValue();
+			details.setStartDate(entry.getKey());
+			double close = Double.parseDouble(entry.getValue().getClose());
+            double open = Double.parseDouble(entry.getValue().getOpen());
+            double high = Double.parseDouble(entry.getValue().getHigh());
+            double low  = Double.parseDouble(entry.getValue().getLow()); 
+            
+
+			if (close > open) {
+				details.setCandleColour("Green");
+			} else {
+				details.setCandleColour("Red");
+			}
+
+			double candleHeight = high - low;
+			double candleBody = close - open;
+
+			details.setCandleHeight(candleHeight);
+
+			details.setCandleBody(candleBody);
+			
+			double candleSize = candleBody / candleHeight;
+			if (candleSize > 0.5) {
+				details.setCandleType("LG");
+			} else if (candleSize < -0.5) {
+				details.setCandleType("LR");
+			} else {
+				details.setCandleType("SL");
+			}
 
 		}
 		return consolidatedHrlyCandlesList;
