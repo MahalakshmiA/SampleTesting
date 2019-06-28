@@ -15,10 +15,19 @@ import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 public class MyDeserializer implements JsonDeserializer<OutputObj> {
-    private final String timezoneList_key = "Time Series (Daily)";
-    		//"Time Series (5min)";
+    private String timezoneList_key = "Time Series (60min)"; 
+    		//"Time Series (Daily)";
+    		//"Time Series (60min)";
 
-    @Override
+    public String getTimezoneList_key() {
+		return timezoneList_key;
+	}
+
+	public void setTimezoneList_key(String timezoneList_key) {
+		this.timezoneList_key = timezoneList_key;
+	}
+
+	@Override
     public OutputObj deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
     	OutputObj obj = new OutputObj();
     	
