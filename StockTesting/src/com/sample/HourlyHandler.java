@@ -57,7 +57,7 @@ public class HourlyHandler {
 		String symbol = "^NSEI";
 		String interval = "60min";
 		boolean nseStock = true;
-		boolean is120 = false;
+		boolean is120 = true;
 		try {
 			TreeMap<String, Details> sortedCandlesList = getCandlesList(symbol, interval);
 			getHourlyCandlesList(sortedCandlesList, nseStock, is120);
@@ -154,7 +154,7 @@ public class HourlyHandler {
 			StringBuilder sb = new StringBuilder();
 
 			String output;
-			System.out.println("Output from Server .... \n");
+//			System.out.println("Output from Server .... \n");
 			while ((output = br.readLine()) != null) {
 
 				sb.append(output);
@@ -264,11 +264,11 @@ public class HourlyHandler {
 
 			}
 		}
-		System.out.println("consolidatedHighLowList size" + consolidatedHrlyCandlesList.size());
+//		System.out.println("consolidatedHighLowList size" + consolidatedHrlyCandlesList.size());
 		for (Entry<String, Details> entry : consolidatedHrlyCandlesList.entrySet()) {
-			/*System.out.println(entry1.getKey() + "| High - " + entry1.getValue().getHigh() + "| Low - "
-					+ entry1.getValue().getLow() + "| Open - " + entry1.getValue().getOpen() + "| Close - "
-					+ entry1.getValue().getClose());*/
+			/*System.out.println(entry.getKey() + "| High - " + entry.getValue().getHigh() + "| Low - "
+					+ entry.getValue().getLow() + "| Open - " + entry.getValue().getOpen() + "| Close - "
+					+ entry.getValue().getClose());*/
 			
 			Details details = entry.getValue();
 			details.setStartDate(entry.getKey());
@@ -618,7 +618,7 @@ public class HourlyHandler {
 
 		do {
 
-			String startdateWithEndHrs = addEndHrsMins(getyyyyMMddFormat(startDate), 15);
+			String startdateWithEndHrs = addEndHrsMins(getyyyyMMddFormat(startDate), 14);
 
 			if (getDate(startDate).before(getDate(endTime)) || getDate(startDate).equals(getDate(endTime))) {
 				if (getDate(startDate).after(getDate(startdateWithEndHrs))) {
