@@ -1,10 +1,12 @@
 /**
  * 
  */
-package com.sample;
+package com.api.testing;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -28,17 +30,24 @@ import com.google.gson.JsonSyntaxException;
  */
 public class StockNotification {
 
-	public static String niftyStocksLevelsPath = "D://Maha//file//niftyStocksLevels.txt";
-	public static String rejectedStocksListPath = "D://Maha//file//rejectedStocksList.txt";
-	public static int notifyPercent = 2;
+//	public static String fileName = "TwoHourLevels";
+//	public static String fileName = "Hourlylevels";
+	public static String fileName = "niftyStocksLevels";
+//	public static String niftyStocksLevelsPath = "E:\\Soosai\\Stocks\\SampleAPItesting-master\\SampleAPItesting-master\\APItesting\\config\\file\\niftyStocksLevels.txt";
+	public static String niftyStocksLevelsPath = "D:\\Soosai\\APItesting\\config\\file\\"+fileName+".txt";
+	public static String rejectedStocksListPath = "D:\\Soosai\\APItesting\\config\\file\\rejectedStocksList.txt";
+	public static int notifyPercent = 3;
+	public static int inputLevelPercent = 3;
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		long starttimefinal = System.currentTimeMillis();
 		System.out.println("Start time " + new Date(starttimefinal));
+		StringBuffer notificationLevels = new StringBuffer();
 		// TODO Auto-generated method stub
 		try {
 			ArrayList<StockLevels> newShortListedStocks = getNotifications();
@@ -50,15 +59,23 @@ public class StockNotification {
 				});
 			
 			System.out.println("\nNewShortListedStocks Size " + newShortListedStocks.size() + "\n");
+			
 			for (StockLevels levels : newShortListedStocks) {
-				System.out.println(levels.getStockName() + "|" + levels.getLevelType() + "|" + levels.getOldLevel()
-						+ "|" + levels.getOldLevelPercent() + "|" + levels.getNewLevel() + "|"
-						+ df2.format(levels.getNewLevelPercent()));
+				String notificationLevel = levels.getStockName() + "|" + levels.getDate()  + "|" +levels.getLevelType() +
+						"|" + levels.getOldLevel()+ "|" + levels.getOldLevelEnd()
+				+ "|" + levels.getOldLevelPercent() + "|" + levels.getNewLevel() + "|"
+				+ df2.format(levels.getNewLevelPercent());
+				System.out.println(notificationLevel);
+				notificationLevels.append(notificationLevel+"\n");
 
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			String notifyFile = "D:\\Soosai\\APItesting\\config\\file\\Notify"+fileName+".txt";
+			writeToFile(notifyFile,notificationLevels);
+//			writeToFile("E:\\Soosai\\Stocks\\SampleAPItesting-master\\SampleAPItesting-master\\APItesting\\config\\file\\notifyNiftyDailyLevels.txt",notificationLevels);
 		}
 		long endtimefinal = System.currentTimeMillis();
 		System.out.println("\nEnd time " + new Date(endtimefinal));
@@ -70,8 +87,9 @@ public class StockNotification {
 
 		double quote;
 		ArrayList<StockLevels> shortListedStocks = getshortListedStocks();
-		ArrayList<StockLevels> rejectedListStocks = getRejectListStocks();
 		ArrayList<StockLevels> newShortListedStocks = new ArrayList<StockLevels>();
+		ArrayList<StockLevels> rejectedListStocks = getRejectListStocks();
+//		shortListedStocks.removeAll(rejectedListStocks);
 		int i = 0;
 		long starttime = System.currentTimeMillis();
 		long endtime;
@@ -80,13 +98,17 @@ public class StockNotification {
 			System.out.println("\nShortListed levels Size" + shortListedStocks.size());
 			int listSize = shortListedStocks.size();
 			for (StockLevels levels : shortListedStocks) {
-				
 				boolean toProceed = true;
 				String stockName = levels.getStockName();
 				String levelType = levels.getLevelType();
+				Double oldLevel =  levels.getOldLevel();
+				Double oldLevelEnd = levels.getOldLevelEnd();
 				for (StockLevels rejectedLevels : rejectedListStocks) {
 					if (stockName.equalsIgnoreCase(rejectedLevels.getStockName())
-							&& levelType.equalsIgnoreCase(rejectedLevels.getLevelType())) {
+							&& levelType.equalsIgnoreCase(rejectedLevels.getLevelType())
+							&& oldLevel.equals(rejectedLevels.getOldLevel())
+							&& oldLevelEnd.equals(rejectedLevels.getOldLevelEnd())) {
+						
 						toProceed = false;
 						break;
 					}
@@ -94,6 +116,16 @@ public class StockNotification {
 				}
 				if(toProceed) {
 				quote = 0.0;
+				if(inputLevelPercent == notifyPercent) {
+					levels.setNewLevel(levels.getOldLevel());
+					levels.setNewLevelPercent(levels.getOldLevelPercent());
+					newShortListedStocks.add(levels);
+					
+				}
+				else {
+					
+				
+				
 				quote = getQuote(levels.getStockName(), "&apikey=F4ASHUF1BONNF5AQ");
 				double newLevelPercent;
 				if(levels.getLevelType().equalsIgnoreCase("Support")) {
@@ -117,6 +149,7 @@ public class StockNotification {
 					starttime = System.currentTimeMillis();
 				}
 				}
+			}
 			}
 
 		}
@@ -206,10 +239,12 @@ public class StockNotification {
 				String[] splitLines = line.split("\\|");
 				StockLevels levels = new StockLevels();
 				levels.setStockName(splitLines[0]);
-				levels.setLevelType(splitLines[1]);
-				levels.setOldLevel(Double.valueOf(splitLines[2]));
-				levels.setOldLevelPercent(Double.valueOf(splitLines[3]));
-				if (levels.getOldLevelPercent() < notifyPercent) {
+				levels.setDate(splitLines[1]);
+				levels.setLevelType(splitLines[2]);
+				levels.setOldLevel(Double.valueOf(splitLines[3]));
+				levels.setOldLevelEnd((Double.valueOf(splitLines[4])));
+				levels.setOldLevelPercent(Double.valueOf(splitLines[5]));
+				if (levels.getOldLevelPercent() < inputLevelPercent) {
 					shortListedStocks.add(levels);
 				}
 			}
@@ -230,6 +265,13 @@ public class StockNotification {
 		return shortListedStocks;
 	}
 	
+	public static void writeToFile(String pFilename, StringBuffer pData) throws IOException {
+        BufferedWriter out = new BufferedWriter(new FileWriter(pFilename));
+        out.write(pData.toString());
+        out.flush();
+        out.close();
+    }
+	
 	public static ArrayList<StockLevels> getRejectListStocks() {
 		BufferedReader br = null;
 		FileReader fr = null;
@@ -248,7 +290,11 @@ public class StockNotification {
 				String[] splitLines = line.split("\\|");
 				StockLevels levels = new StockLevels();
 				levels.setStockName(splitLines[0]);
-				levels.setLevelType(splitLines[1]);
+				levels.setDate(splitLines[1]);
+				levels.setLevelType(splitLines[2]);
+				levels.setOldLevel(Double.valueOf(splitLines[3]));
+				levels.setOldLevelEnd((Double.valueOf(splitLines[4])));
+				levels.setOldLevelPercent(Double.valueOf(splitLines[5]));
 				rejectListStocks.add(levels);
 			}
 
@@ -267,5 +313,6 @@ public class StockNotification {
 		}
 		return rejectListStocks;
 	}
+
 
 }
