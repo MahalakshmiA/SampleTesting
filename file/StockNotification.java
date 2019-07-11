@@ -29,6 +29,7 @@ import com.google.gson.JsonSyntaxException;
 public class StockNotification {
 
 	public static String niftyStocksLevelsPath = "D://Maha//file//niftyStocksLevels.txt";
+	public static String rejectedStocksListPath = "D://Maha//file//rejectedStocksList.txt";
 	public static int notifyPercent = 2;
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
@@ -69,6 +70,7 @@ public class StockNotification {
 
 		double quote;
 		ArrayList<StockLevels> shortListedStocks = getshortListedStocks();
+		ArrayList<StockLevels> rejectedListStocks = getRejectListStocks();
 		ArrayList<StockLevels> newShortListedStocks = new ArrayList<StockLevels>();
 		int i = 0;
 		long starttime = System.currentTimeMillis();
@@ -78,7 +80,19 @@ public class StockNotification {
 			System.out.println("\nShortListed levels Size" + shortListedStocks.size());
 			int listSize = shortListedStocks.size();
 			for (StockLevels levels : shortListedStocks) {
+				
+				boolean toProceed = true;
+				String stockName = levels.getStockName();
+				String levelType = levels.getLevelType();
+				for (StockLevels rejectedLevels : rejectedListStocks) {
+					if (stockName.equalsIgnoreCase(rejectedLevels.getStockName())
+							&& levelType.equalsIgnoreCase(rejectedLevels.getLevelType())) {
+						toProceed = false;
+						break;
+					}
 
+				}
+				if(toProceed) {
 				quote = 0.0;
 				quote = getQuote(levels.getStockName(), "&apikey=F4ASHUF1BONNF5AQ");
 				double newLevelPercent;
@@ -101,6 +115,7 @@ public class StockNotification {
 					System.out.println("Time taken & Wait time ..." + timetaken + " & " + (61000 - timetaken));
 					Thread.sleep(61000 - timetaken);
 					starttime = System.currentTimeMillis();
+				}
 				}
 			}
 
@@ -213,6 +228,44 @@ public class StockNotification {
 			}
 		}
 		return shortListedStocks;
+	}
+	
+	public static ArrayList<StockLevels> getRejectListStocks() {
+		BufferedReader br = null;
+		FileReader fr = null;
+		ArrayList<StockLevels> rejectListStocks = new ArrayList<>();
+
+		try {
+
+			fr = new FileReader(rejectedStocksListPath);
+			br = new BufferedReader(fr);
+
+			// read line by line
+			String line;
+
+			while ((line = br.readLine()) != null) {
+				// System.out.println(line);
+				String[] splitLines = line.split("\\|");
+				StockLevels levels = new StockLevels();
+				levels.setStockName(splitLines[0]);
+				levels.setLevelType(splitLines[1]);
+				rejectListStocks.add(levels);
+			}
+
+		} catch (IOException e) {
+			System.err.format("IOException: %s%n", e);
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+
+				if (fr != null)
+					fr.close();
+			} catch (IOException ex) {
+				System.err.format("IOException: %s%n", ex);
+			}
+		}
+		return rejectListStocks;
 	}
 
 }
