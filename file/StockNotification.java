@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sample;
+package com.api.testing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,11 +35,12 @@ public class StockNotification {
 //	public static String fileName = "TwoHourLevels";
 //	public static String fileName = "Hourlylevels";
 	public static String fileName = "niftyStocksLevels";
+	public static String path = "D:\\Soosai\\APItesting\\config\\file\\";
 //	public static String niftyStocksLevelsPath = "E:\\Soosai\\Stocks\\SampleAPItesting-master\\SampleAPItesting-master\\APItesting\\config\\file\\niftyStocksLevels.txt";
-	public static String niftyStocksLevelsPath = "D:\\Maha\\file\\"+fileName+".txt";
-	public static String rejectedStocksListPath = "D:\\Maha\\file\\rejectedStocksList.txt";
-	public static String niftyStocksMonthlyLevelPath = "D:\\Maha\\file\\niftyStocksMonthlyLevels.txt";
-	public static String notifyFile = "D:\\Maha\\file\\Notify"+fileName+".txt";
+	public static String niftyStocksLevelsPath = path+fileName+".txt";
+	public static String rejectedStocksListPath = path+"rejectedStocksList.txt";
+	public static String niftyStocksMonthlyLevelPath = path+"niftyStocksMonthlyLevels.txt";
+	public static String notifyFile = path+"Notify"+fileName+".txt";
 	public static int notifyPercent = 3;
 	public static int inputLevelPercent = 3;
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
@@ -74,7 +75,7 @@ public class StockNotification {
 				String notificationLevel = levels.getStockName() + "|" + levels.getDate()  + "|" +levels.getLevelType() +
 						"|" + levels.getOldLevel()+ "|" + levels.getOldLevelEnd()
 				+ "|" + levels.getOldLevelPercent() + "|" + levels.getNewLevel() + "|"
-				+ df2.format(levels.getNewLevelPercent() + "|" +df2.format(levels.getScore()));
+				+ df2.format(levels.getNewLevelPercent()) + "|" +Double.valueOf(levels.getScore());
 				System.out.println(notificationLevel);
 				notificationLevels.append(notificationLevel+"\n");
 
@@ -131,6 +132,10 @@ public class StockNotification {
 				if(inputLevelPercent == notifyPercent) {
 					levels.setNewLevel(levels.getOldLevel());
 					levels.setNewLevelPercent(levels.getOldLevelPercent());
+					MnthlyLvlStockDetail monthlyLvlDetail = mnthlyLvlStockDetailsMap.get(stockName);
+					Double score = getScore(monthlyLvlDetail, oldLevel, levelType);
+					System.out.println(monthlyLvlDetail.getStockName() + "|" + score);
+					levels.setScore(score);
 					newShortListedStocks.add(levels);
 					
 				}
@@ -149,11 +154,13 @@ public class StockNotification {
 				// System.out.println(newLevelPercent);
 				if (newLevelPercent < notifyPercent) {
 					levels.setNewLevel(quote);
-					levels.setNewLevelPercent(newLevelPercent);
+					levels.setNewLevelPercent(newLevelPercent);	
 					MnthlyLvlStockDetail monthlyLvlDetail = mnthlyLvlStockDetailsMap.get(stockName);
 					Double score = getScore(monthlyLvlDetail, oldLevel, levelType);
+					System.out.println(monthlyLvlDetail.getStockName() + "|" + score);
 					levels.setScore(score);
 					newShortListedStocks.add(levels);
+					
 				}
 				i++;
 				endtime = System.currentTimeMillis();
@@ -165,6 +172,7 @@ public class StockNotification {
 				}
 				}
 			}
+				
 			}
 
 		}
@@ -363,7 +371,7 @@ public class StockNotification {
 			}
 			
 			System.out.println("mnthlyLvlStockDetailsMap Size" + mnthlyLvlStockDetailsMap.size());
-			for (Entry<String, MnthlyLvlStockDetail> entry1 : mnthlyLvlStockDetailsMap.entrySet()) {
+		/*	for (Entry<String, MnthlyLvlStockDetail> entry1 : mnthlyLvlStockDetailsMap.entrySet()) {
 				System.out.println(entry1.getKey() + "| Support Date - " + entry1.getValue().getSupportDate()
 						+ "| curve Low start - " + entry1.getValue().getCurveLowStart() + "| curve Low end - "
 						+ entry1.getValue().getCurveLowEnd() + "| Resistance date - "
@@ -371,7 +379,7 @@ public class StockNotification {
 						+ entry1.getValue().getCurveHighStart() + "| curve High end - "
 						+ entry1.getValue().getCurveHighEnd() + "| Score " + entry1.getValue().getScore());
 
-			}
+			}*/
 			
 			
 		} catch (IOException e) {
@@ -433,7 +441,7 @@ public class StockNotification {
 	
 	private static Double getScore(MnthlyLvlStockDetail monthlyLvlDetail, Double level, String levelType) {
 
-		Double score = null;
+		Double score = 0.00;
 		Double curveLowStart = monthlyLvlDetail.getCurveLowStart();
 		Double curveLowEnd = monthlyLvlDetail.getCurveLowEnd();
 		Double curveHighStart = monthlyLvlDetail.getCurveHighStart();
