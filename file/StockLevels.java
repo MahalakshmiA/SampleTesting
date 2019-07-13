@@ -45,6 +45,40 @@ public class StockLevels {
 	
 	public Double oldLevel;
 	
+	public Double oldLevelEnd;
+	
+	/**
+	 * @return the oldLevelEnd
+	 */
+	public Double getOldLevelEnd() {
+		return oldLevelEnd;
+	}
+
+	/**
+	 * @param oldLevelEnd the oldLevelEnd to set
+	 */
+	public void setOldLevelEnd(Double oldLevelEnd) {
+		this.oldLevelEnd = oldLevelEnd;
+	}
+
+	/**
+	 * @return the date
+	 */
+	public String getDate() {
+		return date;
+	}
+
+	/**
+	 * @param date the date to set
+	 */
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+
+
+	public String date;
+	
 	/**
 	 * @return the oldLevel
 	 */
@@ -108,5 +142,21 @@ public class StockLevels {
 	public Double newLevel;
 	
 	public Double newLevelPercent;
+	
+	public Double score;
+
+	/**
+	 * @return the score
+	 */
+	public Double getScore() {
+		return score;
+	}
+
+	/**
+	 * @param score the score to set
+	 */
+	public void setScore(Double score) {
+		this.score = score;
+	}
 
 }
