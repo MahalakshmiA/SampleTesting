@@ -1,13 +1,35 @@
 /**
  * 
  */
-package com.sample;
+package com.api.testing;
 
 /**
  * @author 525523
  *
  */
 public class StockLevels {
+	public String date;
+	
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public Double getOldLevelEnd() {
+		return oldLevelEnd;
+	}
+
+	public void setOldLevelEnd(Double oldLevelEnd) {
+		this.oldLevelEnd = oldLevelEnd;
+	}
+
+
+
+	public Double oldLevelEnd;
+	
 	
 	/**
 	 * @return the stockName
@@ -45,39 +67,6 @@ public class StockLevels {
 	
 	public Double oldLevel;
 	
-	public Double oldLevelEnd;
-	
-	/**
-	 * @return the oldLevelEnd
-	 */
-	public Double getOldLevelEnd() {
-		return oldLevelEnd;
-	}
-
-	/**
-	 * @param oldLevelEnd the oldLevelEnd to set
-	 */
-	public void setOldLevelEnd(Double oldLevelEnd) {
-		this.oldLevelEnd = oldLevelEnd;
-	}
-
-	/**
-	 * @return the date
-	 */
-	public String getDate() {
-		return date;
-	}
-
-	/**
-	 * @param date the date to set
-	 */
-	public void setDate(String date) {
-		this.date = date;
-	}
-
-
-
-	public String date;
 	
 	/**
 	 * @return the oldLevel
@@ -143,19 +132,35 @@ public class StockLevels {
 	
 	public Double newLevelPercent;
 	
-	public Double score;
+	public int score = 0;
+	
+	public String newlyAdded ="";
+
+	/**
+	 * @return the newlyAdded
+	 */
+	public String getNewlyAdded() {
+		return newlyAdded;
+	}
+
+	/**
+	 * @param newlyAdded the newlyAdded to set
+	 */
+	public void setNewlyAdded(String newlyAdded) {
+		this.newlyAdded = newlyAdded;
+	}
 
 	/**
 	 * @return the score
 	 */
-	public Double getScore() {
+	public int getScore() {
 		return score;
 	}
 
 	/**
 	 * @param score the score to set
 	 */
-	public void setScore(Double score) {
+	public void setScore(int score) {
 		this.score = score;
 	}
 
