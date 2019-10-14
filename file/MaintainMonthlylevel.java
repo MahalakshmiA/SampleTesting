@@ -19,21 +19,24 @@ import java.util.HashMap;
  *
  */
 public class MaintainMonthlylevel {
-	public static String niftyStocksfileName = "niftyStocksLevels";
+	
 
 	public static String defaultPath = "D:\\Maha\\workspace\\APITesting-S\\config\\file\\";
-	public static String niftyStocksFilePath = defaultPath + niftyStocksfileName + ".txt";
-	public static String newlyAddedStocksFileName = "niftyStocksLevels-Added";
-	public static String removedStocksFileName = "niftyStocksLevels-Removed";
-	public static String newlyAddedStocksFilePath = defaultPath + newlyAddedStocksFileName + ".txt";
-	public static String removedStocksFilePath = defaultPath + removedStocksFileName + ".txt";
-
+	
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		String niftyStocksfileName = "niftyStocksLevels";
+		
+		generateDailyAndMonthlyFiles(niftyStocksfileName);
 
+	}
+
+	private static void generateDailyAndMonthlyFiles(String niftyStocksfileName) {
+		String niftyStocksFilePath = defaultPath + niftyStocksfileName + ".txt";
 		System.out.println(niftyStocksFilePath);
 
 		Calendar cal = Calendar.getInstance();
@@ -58,7 +61,7 @@ public class MaintainMonthlylevel {
 					System.out.println("Previous Month File Exists - cloning it to current month");
 					try {
 						ArrayList<StockLevels> prevMonthStocksLevelsList = getShortListedStocksList(
-								niftyStocksFilePath);
+								niftyStocksPrevMonthlyFilePath);
 						writeStockListToFile(niftyStocksMonthlyFilePath, prevMonthStocksLevelsList);
 
 					} catch (IOException e) {
@@ -86,23 +89,21 @@ public class MaintainMonthlylevel {
 		System.out.println("dailyStocksLevelsList Size " + dailyStocksLevelsList.size());
 		System.out.println("MonthlyStocksLevelsList Size " + monthlyStocksLevelsList.size());
 
-		HashMap<String, ArrayList<StockLevels>> addedRemovedMap = compareMonthlyDailyLevels(monthlyStocksLevelsList,
-				dailyStocksLevelsList);
+		HashMap<String, ArrayList<StockLevels>> addedRemovedMap = generateAddedRemovedStocksList(monthlyStocksLevelsList,
+				dailyStocksLevelsList,niftyStocksfileName);
 		ArrayList<StockLevels> newlyAddedStocksList = addedRemovedMap.get("ADDED");
 		ArrayList<StockLevels> removedStocksList = addedRemovedMap.get("REMOVED");
 		System.out.println("newlyAddedStocksList Size " + newlyAddedStocksList.size());
 		System.out.println("removedStocksList Size " + removedStocksList.size());
 
 		try {
-			writeStockListToFile(newlyAddedStocksFilePath, newlyAddedStocksList);
-			writeStockListToFile(removedStocksFilePath, removedStocksList);
+		
 			monthlyStocksLevelsList.addAll(newlyAddedStocksList);
 			System.out.println("MonthlyStocksLevelsList Size After added new Stocks " + monthlyStocksLevelsList.size());
 			writeStockListToFile(niftyStocksMonthlyFilePath, monthlyStocksLevelsList);
 		} catch (Exception e) {
 			System.out.println("Exception occurs");
 		}
-
 	}
 
 	public static void maintainMonthlyFile() {
@@ -170,17 +171,24 @@ public class MaintainMonthlylevel {
 		out.close();
 	}
 
-	public static HashMap<String, ArrayList<StockLevels>> compareMonthlyDailyLevels(
-			ArrayList<StockLevels> monthlyStocksLevelsList, ArrayList<StockLevels> dailyStocksLevelsList) {
+	public static HashMap<String, ArrayList<StockLevels>> generateAddedRemovedStocksList(
+			ArrayList<StockLevels> file1Higher, ArrayList<StockLevels> file2Lower, String genericFileName) {
+		
+		String newlyAddedStocksFileName = genericFileName+"-Added";
+		String removedStocksFileName = genericFileName+"-Removed";
+		String newlyAddedStocksFilePath = defaultPath + newlyAddedStocksFileName + ".txt";
+		String removedStocksFilePath = defaultPath + removedStocksFileName + ".txt";
+
+		
 		ArrayList<StockLevels> newlyAddedStocksList = new ArrayList<StockLevels>();
 		ArrayList<StockLevels> removedStocksList = new ArrayList<StockLevels>();
 		HashMap<String, ArrayList<StockLevels>> addedRemovedMap = new HashMap<>();
 
-		for (StockLevels levels : monthlyStocksLevelsList) {
+		for (StockLevels levels : file1Higher) {
 
 			boolean isexists = false;
 
-			for (StockLevels levels2 : dailyStocksLevelsList) {
+			for (StockLevels levels2 : file2Lower) {
 
 				if (levels.getStockName().equalsIgnoreCase(levels2.getStockName())
 						&& levels.getDate().equalsIgnoreCase(levels2.getDate())
@@ -199,10 +207,10 @@ public class MaintainMonthlylevel {
 
 		}
 
-		for (StockLevels levels : dailyStocksLevelsList) {
+		for (StockLevels levels : file2Lower) {
 
 			boolean isexists = false;
-			for (StockLevels levels2 : monthlyStocksLevelsList) {
+			for (StockLevels levels2 : file1Higher) {
 
 				if (levels.getStockName().equalsIgnoreCase(levels2.getStockName())
 						&& levels.getDate().equalsIgnoreCase(levels2.getDate())
@@ -223,6 +231,13 @@ public class MaintainMonthlylevel {
 
 		addedRemovedMap.put("ADDED", newlyAddedStocksList);
 		addedRemovedMap.put("REMOVED", removedStocksList);
+		try {
+		writeStockListToFile(newlyAddedStocksFilePath, newlyAddedStocksList);
+		writeStockListToFile(removedStocksFilePath, removedStocksList);
+		}catch(Exception e) {
+			System.out.println("Exception occurs while writing the file");
+		}
+		
 		return addedRemovedMap;
 
 	}
