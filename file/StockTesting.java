@@ -118,12 +118,12 @@ public class StockTesting extends JPanel {
 					System.out.println("5 selected");
 					outputPath = "5 selected";
 				}
-				path.setLabelFor(path);;
+			path.setText(outputPath);
 				
 			}
 		});
 
-		JFrame frame = new JFrame();
+		JFrame frame = new JFrame("Stock Testing v1.0");
 		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 		frame.getContentPane().add(form, BorderLayout.NORTH);
 
